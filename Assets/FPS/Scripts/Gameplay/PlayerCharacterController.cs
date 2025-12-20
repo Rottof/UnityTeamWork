@@ -354,17 +354,24 @@ namespace Unity.FPS.Gameplay
                 // handle air movement
                 else
                 {
-                    // add air acceleration
-                    CharacterVelocity += worldspaceMoveInput * AccelerationSpeedInAir * Time.deltaTime;
+                    // 计算期望的水平速度（基于输入和空中最大速度）
+                    Vector3 desiredHorizontal = worldspaceMoveInput * (MaxSpeedInAir * speedModifier);
 
-                    // limit air speed to a maximum, but only horizontally
+                    // 保留当前垂直速度
                     float verticalVelocity = CharacterVelocity.y;
-                    Vector3 horizontalVelocity = Vector3.ProjectOnPlane(CharacterVelocity, Vector3.up);
-                    horizontalVelocity = Vector3.ClampMagnitude(horizontalVelocity, MaxSpeedInAir * speedModifier);
-                    CharacterVelocity = horizontalVelocity + (Vector3.up * verticalVelocity);
 
-                    // apply the gravity to the velocity
-                    CharacterVelocity += Vector3.down * GravityDownForce * Time.deltaTime;
+                    // 当前水平速度（去掉垂直分量）
+                    Vector3 currentHorizontal = Vector3.ProjectOnPlane(CharacterVelocity, Vector3.up);
+
+                    // 使用插值平滑地将当前水平速度朝期望速度靠拢（用空中加速度作为平滑因子）
+                    Vector3 newHorizontal = Vector3.Lerp(currentHorizontal, desiredHorizontal, AccelerationSpeedInAir * Time.deltaTime);
+
+                    // 限制水平速度大小
+                    newHorizontal = Vector3.ClampMagnitude(newHorizontal, MaxSpeedInAir * speedModifier);
+
+                    // 合并回最终速度并施加重力
+                    CharacterVelocity = newHorizontal + (Vector3.up * verticalVelocity);
+                    CharacterVelocity += Vector3.down * (GravityDownForce * Time.deltaTime);
                 }
             }
 
