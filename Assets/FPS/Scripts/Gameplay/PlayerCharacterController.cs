@@ -1,6 +1,8 @@
-﻿using Unity.FPS.Game;
+﻿using System.Xml.Linq;
+using Unity.FPS.Game;
 using UnityEngine;
 using UnityEngine.Events;
+using FPS.Scripts.Office;
 
 namespace Unity.FPS.Gameplay
 {
@@ -210,12 +212,30 @@ namespace Unity.FPS.Gameplay
             {
                 SetCrouchingState(!IsCrouching, false);
             }
+            if (m_InputHandler.GetInteractInputDown())
+            {
+                TryInteract();
+            }
 
             UpdateCharacterHeight(false);
 
             HandleCharacterMovement();
         }
+        
+        void TryInteract()
+        {
+            Ray ray = new Ray(PlayerCamera.transform.position, PlayerCamera.transform.forward);
+            RaycastHit hit;
 
+            if (Physics.Raycast(ray, out hit, 3f))
+            {
+                DoorInteract door = hit.collider.GetComponentInParent<DoorInteract>();
+                if (door != null)
+                {
+                    door.Toggle(ray); // 传玩家位置
+                }
+            }
+        }
         void OnDie()
         {
             IsDead = true;

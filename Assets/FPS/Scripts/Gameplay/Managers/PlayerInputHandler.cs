@@ -228,6 +228,12 @@ namespace Unity.FPS.Gameplay
             return 0;
         }
 
+        public bool GetInteractInputDown()
+        {
+            return CanProcessInput() &&
+                   Input.GetButtonDown(GameConstants.k_ButtonNameInteract);
+        }
+        
         float GetMouseOrStickLookAxis(string mouseInputName, string stickInputName)
         {
             if (CanProcessInput())
