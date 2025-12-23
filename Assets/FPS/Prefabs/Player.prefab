@@ -453,11 +453,11 @@ MonoBehaviour:
     m_Bits: 1
   GroundCheckDistance: 1
   MaxSpeedOnGround: 6
-  MovementSharpnessOnGround: 15
+  MovementSharpnessOnGround: 10
   MaxSpeedCrouchedRatio: 0.5
   MaxSpeedInAir: 8
   AccelerationSpeedInAir: 1
-  SprintSpeedModifier: 1.5
+  SprintSpeedModifier: 1.2
   KillHeight: -50
   RotationSpeed: 200
   AimingRotationMultiplier: 0.4
