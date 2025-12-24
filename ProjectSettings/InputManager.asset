@@ -345,7 +345,7 @@ InputManager:
     m_Name: NextWeapon
     descriptiveName: 
     descriptiveNegativeName: 
-    negativeButton: e
+    negativeButton: 
     positiveButton: q
     altNegativeButton: joystick button 4
     altPositiveButton: joystick button 3
