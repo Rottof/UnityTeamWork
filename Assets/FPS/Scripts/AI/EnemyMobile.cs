@@ -37,7 +37,7 @@ namespace Unity.FPS.AI
         const string k_AnimAlertedParameter = "Alerted";
         const string k_AnimOnDamagedParameter = "OnDamaged";
 
-        void Start()
+        protected void Start()
         {
             m_EnemyController = GetComponent<EnemyController>();
             DebugUtility.HandleErrorIfNullGetComponent<EnemyController, EnemyMobile>(m_EnemyController, this,
@@ -99,7 +99,7 @@ namespace Unity.FPS.AI
             }
         }
 
-        void UpdateCurrentAiState()
+        protected virtual void UpdateCurrentAiState()
         {
             // Handle logic 
             switch (AiState)
