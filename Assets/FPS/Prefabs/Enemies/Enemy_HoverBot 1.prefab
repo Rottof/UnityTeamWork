@@ -302,7 +302,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1857b2df8de24b24190ce9e067d2e1e4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Animator: {fileID: 320366457759794871, guid: 25a1b0efadb966e44889fce712c8ff8d, type: 3}
+  Animator: {fileID: 1896929655610660094}
   AttackStopDistanceRatio: 0.08
   RandomHitSparks:
   - {fileID: 9125706537325074547, guid: 25a1b0efadb966e44889fce712c8ff8d, type: 3}
@@ -1313,6 +1313,12 @@ Transform:
 --- !u!4 &1896929655601314616 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 400038, guid: 8e64c7aa328349d4ea713298f19a414f,
+    type: 3}
+  m_PrefabInstance: {fileID: 1896929655601176990}
+  m_PrefabAsset: {fileID: 0}
+--- !u!95 &1896929655610660094 stripped
+Animator:
+  m_CorrespondingSourceObject: {fileID: 9500000, guid: 8e64c7aa328349d4ea713298f19a414f,
     type: 3}
   m_PrefabInstance: {fileID: 1896929655601176990}
   m_PrefabAsset: {fileID: 0}
