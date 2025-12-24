@@ -2,8 +2,6 @@ using UnityEngine;
 
 public class TriggerEventPanel : MonoBehaviour
 {
-    // 1. 删除之前的 public GameObject eventPanelPrefab;
-    // 2. 改为直接引用场景中的面板实例
     public GameObject eventPanel; 
 
     private bool hasTriggered = false; 
@@ -14,13 +12,23 @@ public class TriggerEventPanel : MonoBehaviour
         {
             hasTriggered = true; 
 
-            // 3. 核心逻辑：将面板设置为 Active (可见)
             if (eventPanel != null)
             {
-                // 设置为 true 即显示
+                // 显示事件面板
                 eventPanel.SetActive(true); 
+                
+                // 暂停游戏
                 Time.timeScale = 0; 
-                Debug.Log("面板已显示！");
+                
+                // 获取 EventManager 组件
+                EventManager eventManager = eventPanel.GetComponent<EventManager>();
+                if (eventManager != null)
+                {
+                    // 将当前触发物传递给EventManager
+                    eventManager.SetTriggerObject(gameObject);
+                }
+                
+                Debug.Log("事件面板已显示，游戏已暂停！");
             }
             else
             {

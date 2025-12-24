@@ -12,134 +12,92 @@ public class EventManager : MonoBehaviour
     [SerializeField] Button Button3;
     [SerializeField] TMP_Text resultText;
     [SerializeField] TMP_Text countdownText;
-    [SerializeField] float countdownSeconds = 3f;
-    [SerializeField] float closeDelay = 0.5f;
 
-    // shipController ship;
-    // ShootBullet shooter;
+
+    private GameObject triggerObject;
 
     void Start()
     {
         if (eventPanel == null) eventPanel = gameObject;
         eventPanel.SetActive(false); 
+
+        if (Button1 != null)
+        {
+            Button1.onClick.RemoveAllListeners();
+            Button1.onClick.AddListener(OnHealthUp);
+        }
+        if (Button2 != null)
+        {
+            Button2.onClick.RemoveAllListeners();
+            Button2.onClick.AddListener(OnRandomEffect);
+        }
+        if (Button3 != null)
+        {
+            Button3.onClick.RemoveAllListeners();
+            Button3.onClick.AddListener(OnSpeedUp);
+        }
+        
+        // 初始时隐藏倒计时文本
+        if (countdownText != null) countdownText.text = "";
     }    
 
-    //     var playerGo = GameObject.FindWithTag("Player");
-    //     if (playerGo != null)
-    //     {
-    //         ship = playerGo.GetComponent<shipController>();
-    //         shooter = playerGo.GetComponent<ShootBullet>();
-    //         if (shooter == null) shooter = playerGo.GetComponentInChildren<ShootBullet>(true);
-    //     }
-    //     if (ship == null)
-    //     {
-    //         ship = FindObjectOfType<shipController>();
-    //         if (ship != null)
-    //         {
-    //             shooter = ship.GetComponent<ShootBullet>();
-    //             if (shooter == null) shooter = ship.GetComponentInChildren<ShootBullet>(true);
-    //         }
-    //     }
+    void OnHealthUp()
+    {
+        if (resultText != null) resultText.text = "Your health + 20";
+    }
 
-    //     if (Button1 != null)
-    //     {
-    //         Button1.onClick.RemoveAllListeners();
-    //         Button1.onClick.AddListener(OnHealthUp);
-    //     }
-    //     if (Button2 != null)
-    //     {
-    //         Button2.onClick.RemoveAllListeners();
-    //         Button2.onClick.AddListener(OnRandomEffect);
-    //     }
-    //     if (Button3 != null)
-    //     {
-    //         Button3.onClick.RemoveAllListeners();
-    //         Button3.onClick.AddListener(OnSpeedUp);
-    //     }
-    // }
+    void OnRandomEffect()
+    {
+        int r = Random.Range(0, 4);
+        if (r == 0)
+        {
+            if (resultText != null) resultText.text = "Your fire rate + 10%";
+        }
+        else if (r == 1)
+        {
+            if (resultText != null) resultText.text = "Your health - 5";
+        }
+        else if (r == 2)
+        {
+            if (resultText != null) resultText.text = "Your fire: scatter 3-way";
+        }
+        else
+        {
+            if (resultText != null) resultText.text = "Your fire rate + 10%";
+        }
+    }
 
-    // void OnHealthUp()
-    // {
-    //     if (ship != null) ship.TakeDamage(-20f);
-    //     if (resultText != null) resultText.text = "Your health + 20";
-    //     StartCloseDelay();
-    // }
+    void OnSpeedUp()
+    {
+        if (resultText != null) resultText.text = "Your speed + 10%";
+    }
 
-    // void OnRandomEffect()
-    // {
-    //     int r = Random.Range(0, 4);
-    //     if (r == 0)
-    //     {
-    //         if (shooter != null) shooter.IncreaseFireRatePercent(0.10f);
-    //         if (resultText != null) resultText.text = "Your fire rate + 10%";
-    //     }
-    //     else if (r == 1)
-    //     {
-    //         if (ship != null) ship.TakeDamage(5f);
-    //         if (resultText != null) resultText.text = "Your health - 5";
-    //     }
-    //     else if (r == 2)
-    //     {
-    //         if (shooter != null) shooter.EnableScatter(true);
-    //         if (resultText != null) resultText.text = "Your fire: scatter 3-way";
-    //     }
-    //     else
-    //     {
-    //         if (shooter != null) shooter.IncreaseFireRatePercent(0.10f);
-    //         if (resultText != null) resultText.text = "Your fire rate + 10%";
-    //     }
-    //     StartCloseDelay();
-    // }
+    void ClosePanel()
+    {
+        if (eventPanel != null) eventPanel.SetActive(false);
+        Time.timeScale = 1f;
+        if (countdownText != null) countdownText.text = "";
+        
+        // 销毁触发物
+        if (triggerObject != null)
+        {
+            Destroy(triggerObject);
+        }
+    }
+    
+    public void SetTriggerObject(GameObject trigger)
+    {
+        triggerObject = trigger;
+    }
+    
+    void Update()
+    {
+        // 检测ESC键来关闭面板
+        if (Input.GetKeyDown(KeyCode.Escape) && eventPanel != null && eventPanel.activeSelf)
+        {
+            ClosePanel();
+        }
+    }
 
-    // void OnSpeedUp()
-    // {
-    //     if (ship != null) ship.speed *= 1.10f;
-    //     if (resultText != null) resultText.text = "Your speed + 10%";
-    //     StartCloseDelay();
-    // }
 
-    // void ClosePanel()
-    // {
-    //     if (eventPanel != null) eventPanel.SetActive(false);
-    //     Time.timeScale = 1f;
-    //     StopCountdown();
-    //     if (countdownText != null) countdownText.text = "";
-    // }
-
-    // public void BeginCountdown()
-    // {
-    //     StopCountdown();
-    //     if (eventPanel != null && !eventPanel.activeSelf) return;
-    //     StartCoroutine(CountdownRoutine());
-    // }
-
-    // void StopCountdown()
-    // {
-    //     StopAllCoroutines();
-    // }
-
-    // IEnumerator CountdownRoutine()
-    // {
-    //     float remaining = Mathf.Max(0f, countdownSeconds);
-    //     while (remaining > 0f)
-    //     {
-    //         if (countdownText != null) countdownText.text = Mathf.CeilToInt(remaining).ToString();
-    //         yield return new WaitForSecondsRealtime(1f);
-    //         remaining -= 1f;
-    //     }
-    //     if (countdownText != null) countdownText.text = "";
-    //     ClosePanel();
-    // }
-
-    // void StartCloseDelay()
-    // {
-    //     StopCountdown();
-    //     StartCoroutine(CloseAfterDelay());
-    // }
-
-    // IEnumerator CloseAfterDelay()
-    // {
-    //     yield return new WaitForSecondsRealtime(closeDelay);
-    //     ClosePanel();
-    // }
 }
