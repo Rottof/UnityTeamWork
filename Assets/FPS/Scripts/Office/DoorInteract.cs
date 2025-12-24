@@ -47,7 +47,7 @@ namespace FPS.Scripts.Office
                 dir.Normalize();
 
                 // 计算门当前朝向与射线方向的夹角
-                float angle = Vector3.SignedAngle(transform.forward, dir, Vector3.up);
+                float angle = Vector3.SignedAngle(transform.right, dir, Vector3.up);
                 //最大90度
                 if (angle > 0)
                 {
