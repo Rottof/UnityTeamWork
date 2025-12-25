@@ -44,6 +44,7 @@ public class EventManager : MonoBehaviour
     void OnHealthUp()
     {
         if (resultText != null) resultText.text = "Your health + 20";
+        ClosePanel();
     }
 
     void OnRandomEffect()
@@ -65,11 +66,13 @@ public class EventManager : MonoBehaviour
         {
             if (resultText != null) resultText.text = "Your fire rate + 10%";
         }
+        ClosePanel();
     }
 
     void OnSpeedUp()
     {
         if (resultText != null) resultText.text = "Your speed + 10%";
+        ClosePanel();
     }
 
     void ClosePanel()
@@ -92,10 +95,48 @@ public class EventManager : MonoBehaviour
     
     void Update()
     {
-        // 检测ESC键来关闭面板
-        if (Input.GetKeyDown(KeyCode.Escape) && eventPanel != null && eventPanel.activeSelf)
+        if (eventPanel != null && eventPanel.activeSelf)
         {
-            ClosePanel();
+            if (Input.GetKeyDown(KeyCode.Escape))
+            {
+                ClosePanel();
+            }
+
+            if (Input.GetKeyDown(KeyCode.Alpha1) || Input.GetKeyDown(KeyCode.Keypad1))
+            {
+                if (Button1 != null)
+                {
+                    Button1.onClick.Invoke();
+                }
+                else
+                {
+                    OnHealthUp();
+                }
+            }
+
+            if (Input.GetKeyDown(KeyCode.Alpha2) || Input.GetKeyDown(KeyCode.Keypad2))
+            {
+                if (Button2 != null)
+                {
+                    Button2.onClick.Invoke();
+                }
+                else
+                {
+                    OnRandomEffect();
+                }
+            }
+
+            if (Input.GetKeyDown(KeyCode.Alpha3) || Input.GetKeyDown(KeyCode.Keypad3))
+            {
+                if (Button3 != null)
+                {
+                    Button3.onClick.Invoke();
+                }
+                else
+                {
+                    OnSpeedUp();
+                }
+            }
         }
     }
 
