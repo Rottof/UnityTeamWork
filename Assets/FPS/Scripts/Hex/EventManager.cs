@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
+using Unity.FPS.Game;
+using Unity.FPS.Gameplay;
 
 public class EventManager : MonoBehaviour
 {
@@ -43,7 +45,19 @@ public class EventManager : MonoBehaviour
 
     void OnHealthUp()
     {
-        if (resultText != null) resultText.text = "Your health + 20";
+        // 查找玩家并增加最大生命值
+        PlayerCharacterController player = FindObjectOfType<PlayerCharacterController>();
+        if (player != null)
+        {
+            Health playerHealth = player.GetComponent<Health>();
+            if (playerHealth != null)
+            {
+                playerHealth.IncreaseMaxHealth(10f);
+                if (resultText != null) resultText.text = "最大生命值 +10!";
+                print("最大生命值 +10!");
+                print(playerHealth.MaxHealth);
+            }
+        }
         ClosePanel();
     }
 

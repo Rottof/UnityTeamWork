@@ -2119,6 +2119,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Id: 6f50059d-c3ce-4a13-92b1-35e816ee2b45
+--- !u!224 &1426678461 stripped
+RectTransform:
+  m_CorrespondingSourceObject: {fileID: 8250413824482692630, guid: c996b53e9f849234393d1e90f68d1679,
+    type: 3}
+  m_PrefabInstance: {fileID: 4008933581619590512}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1445455132 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 5723270607635128672, guid: b138202c39d001b4e92f5519697bbab7,
@@ -6221,6 +6227,11 @@ PrefabInstance:
       propertyPath: m_AnchoredPosition.y
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 1116702732993553539, guid: c996b53e9f849234393d1e90f68d1679,
+        type: 3}
+      propertyPath: m_Enabled
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 1315839542190839937, guid: c996b53e9f849234393d1e90f68d1679,
         type: 3}
       propertyPath: m_RootOrder
@@ -6346,6 +6357,11 @@ PrefabInstance:
       propertyPath: m_textInfo.characterCount
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 6968360555541191443, guid: c996b53e9f849234393d1e90f68d1679,
+        type: 3}
+      propertyPath: HealthIcon
+      value: 
+      objectReference: {fileID: 1426678461}
     - target: {fileID: 8041970913709386448, guid: c996b53e9f849234393d1e90f68d1679,
         type: 3}
       propertyPath: m_LocalPosition.z
@@ -6379,6 +6395,11 @@ PrefabInstance:
     - target: {fileID: 8250413824482692630, guid: c996b53e9f849234393d1e90f68d1679,
         type: 3}
       propertyPath: m_AnchorMin.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8250413824482692630, guid: c996b53e9f849234393d1e90f68d1679,
+        type: 3}
+      propertyPath: m_AnchoredPosition.x
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 8250413824482692630, guid: c996b53e9f849234393d1e90f68d1679,

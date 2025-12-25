@@ -42,6 +42,14 @@ namespace Unity.FPS.Game
             }
         }
 
+        public void IncreaseMaxHealth(float amount)
+        {
+            MaxHealth += amount;
+            // 同时增加当前生命值，保持生命值比例或直接加满
+            CurrentHealth += amount;
+            CurrentHealth = Mathf.Clamp(CurrentHealth, 0f, MaxHealth);
+        }
+
         public void TakeDamage(float damage, GameObject damageSource)
         {
             if (Invincible)
