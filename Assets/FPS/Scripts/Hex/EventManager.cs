@@ -48,7 +48,7 @@ public class EventManager : MonoBehaviour
         if (Button3 != null)
         {
             Button3.onClick.RemoveAllListeners();
-            Button3.onClick.AddListener(OnSpeedUp);
+            Button3.onClick.AddListener(hexEffects.OnMultiShot);
         }
         
         // 初始时隐藏倒计时文本
@@ -66,9 +66,47 @@ public class EventManager : MonoBehaviour
 
     void OnRandomEffect()
     {
-        if (hexEffects != null)
+        // 随机选择一个效果
+        int r = Random.Range(2, 8); // 从效果2到7中随机选择
+        
+        switch(r)
         {
-            hexEffects.OnRandomEffect();
+            case 2:
+                if (hexEffects != null)
+                {
+                    hexEffects.OnAttackUp();
+                }
+                break;
+            case 3:
+                if (hexEffects != null)
+                {
+                    hexEffects.OnSpeedUp();
+                }
+                break;
+            case 4:
+                if (hexEffects != null)
+                {
+                    hexEffects.OnHeartOfSteel();
+                }
+                break;
+            case 5:
+                if (hexEffects != null)
+                {
+                    hexEffects.OnSwiftFootwork();
+                }
+                break;
+            case 6:
+                if (hexEffects != null)
+                {
+                    hexEffects.OnMultiShot();
+                }
+                break;
+            case 7:
+                if (hexEffects != null)
+                {
+                    hexEffects.OnLifeSource();
+                }
+                break;
         }
         ClosePanel();
     }
