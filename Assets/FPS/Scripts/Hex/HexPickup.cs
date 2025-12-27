@@ -1,38 +1,67 @@
+using Unity.FPS.Game;
 using UnityEngine;
 
-public class TriggerEventPanel : MonoBehaviour
+namespace Unity.FPS.Gameplay
 {
-    public GameObject eventPanel; 
-
-    private bool hasTriggered = false; 
-
-    private void OnTriggerEnter(Collider other)
+    public class HexPickup : Pickup
     {
-        if (other.CompareTag("Player") && !hasTriggered)
-        {
-            hasTriggered = true; 
+        [Header("Event Panel Settings")]
+        public GameObject eventPanel;
 
-            if (eventPanel != null)
+        private bool hasTriggered = false;
+        
+        //触发海克斯科技面板
+        private void OnTriggerEnter(Collider other)
+        {
+            PlayerCharacterController pickingPlayer = other.GetComponent<PlayerCharacterController>();
+            
+            if (pickingPlayer != null && !hasTriggered)
             {
-                // 显示事件面板
-                eventPanel.SetActive(true); 
-                
-                // 暂停游戏
-                Time.timeScale = 0; 
-                
-                // 获取 EventManager 组件
-                EventManager eventManager = eventPanel.GetComponent<EventManager>();
-                if (eventManager != null)
+                hasTriggered = true; 
+
+                if (eventPanel != null)
                 {
-                    // 将当前触发物传递给EventManager
-                    eventManager.SetTriggerObject(gameObject);
+                    // 显示事件面板
+                    eventPanel.SetActive(true); 
+                    
+                    // 暂停游戏
+                    Time.timeScale = 0; 
+                    
+                    // 获取 EventManager 组件
+                    EventManager eventManager = eventPanel.GetComponent<EventManager>();
+                    if (eventManager != null)
+                    {
+                        // 将当前触发物传递给EventManager
+                        eventManager.SetTriggerObject(gameObject);
+                    }
+                    
+                    Debug.Log("事件面板已显示，游戏已暂停！");
+                    
+                    // Play pickup feedback and destroy the object
+                    PlayPickupFeedback();
+                    Destroy(gameObject);
+                }
+                else
+                {
+                    // If no event panel is assigned, use default pickup behavior
+                    base.OnPicked(pickingPlayer);
+                    Destroy(gameObject);
                 }
                 
-                Debug.Log("事件面板已显示，游戏已暂停！");
+                // Broadcast pickup event
+                // PickupEvent evt = Events.PickupEvent;
+                // evt.Pickup = gameObject;
+                // EventManager.Broadcast(evt);
             }
-            else
+        }
+        
+        // Override OnPicked to prevent double processing
+        protected override void OnPicked(PlayerCharacterController player)
+        {
+            // Only process if eventPanel is null, otherwise handled in OnTriggerEnter
+            if (eventPanel == null && !hasTriggered)
             {
-                Debug.LogError("请在 Inspector 中赋值 Event Panel！");
+                base.OnPicked(player);
             }
         }
     }
