@@ -5,6 +5,7 @@ using UnityEngine.UI;
 using TMPro;
 using Unity.FPS.Game;
 using Unity.FPS.Gameplay;
+using Unity.FPS.Hex;
 
 public class EventManager : MonoBehaviour
 {
@@ -12,8 +13,10 @@ public class EventManager : MonoBehaviour
     [SerializeField] Button Button1;
     [SerializeField] Button Button2;
     [SerializeField] Button Button3;
-    [SerializeField] TMP_Text resultText;
     [SerializeField] TMP_Text countdownText;
+    
+    // 引用HexEffects组件
+    HexEffects hexEffects;
 
 
     private GameObject triggerObject;
@@ -22,6 +25,15 @@ public class EventManager : MonoBehaviour
     {
         if (eventPanel == null) eventPanel = gameObject;
         eventPanel.SetActive(false); 
+        
+        // 获取或添加HexEffects组件
+        hexEffects = GetComponent<HexEffects>();
+        if (hexEffects == null)
+        {
+            hexEffects = gameObject.AddComponent<HexEffects>();
+        }
+        
+
 
         if (Button1 != null)
         {
@@ -45,47 +57,28 @@ public class EventManager : MonoBehaviour
 
     void OnHealthUp()
     {
-        // 查找玩家并增加最大生命值
-        PlayerCharacterController player = FindObjectOfType<PlayerCharacterController>();
-        if (player != null)
+        if (hexEffects != null)
         {
-            Health playerHealth = player.GetComponent<Health>();
-            if (playerHealth != null)
-            {
-                playerHealth.IncreaseMaxHealth(10f);
-                if (resultText != null) resultText.text = "最大生命值 +10!";
-                print("最大生命值 +10!");
-                print(playerHealth.MaxHealth);
-            }
+            hexEffects.OnHealthUp();
         }
         ClosePanel();
     }
 
     void OnRandomEffect()
     {
-        int r = Random.Range(0, 4);
-        if (r == 0)
+        if (hexEffects != null)
         {
-            if (resultText != null) resultText.text = "Your fire rate + 10%";
-        }
-        else if (r == 1)
-        {
-            if (resultText != null) resultText.text = "Your health - 5";
-        }
-        else if (r == 2)
-        {
-            if (resultText != null) resultText.text = "Your fire: scatter 3-way";
-        }
-        else
-        {
-            if (resultText != null) resultText.text = "Your fire rate + 10%";
+            hexEffects.OnRandomEffect();
         }
         ClosePanel();
     }
 
     void OnSpeedUp()
     {
-        if (resultText != null) resultText.text = "Your speed + 10%";
+        if (hexEffects != null)
+        {
+            hexEffects.OnSpeedUp();
+        }
         ClosePanel();
     }
 
