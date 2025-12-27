@@ -14,7 +14,7 @@ GameObject:
   - component: {fileID: 2620131183356007195}
   - component: {fileID: 6275561476046798665}
   m_Layer: 0
-  m_Name: Pickup_Health
+  m_Name: Pickup_Bullet
   m_TagString: Untagged
   m_Icon: {fileID: 5721338939258241955, guid: 0000000000000000d000000000000000, type: 0}
   m_NavMeshLayer: 0
@@ -5207,7 +5207,7 @@ ParticleSystem:
       serializedVersion: 2
       minMaxState: 0
       minColor: {r: 1, g: 1, b: 1, a: 1}
-      maxColor: {r: 0.98039216, g: 0.98039216, b: 0.98039216, a: 1}
+      maxColor: {r: 0.2613334, g: 0.8867924, b: 0.10318009, a: 1}
       maxGradient:
         serializedVersion: 2
         key0: {r: 1, g: 1, b: 1, a: 1}
@@ -9962,7 +9962,7 @@ PrefabInstance:
     - target: {fileID: 2300000, guid: 93b1ab0ae86bdf7459bbdf258c9dec49, type: 3}
       propertyPath: m_Materials.Array.data[0]
       value: 
-      objectReference: {fileID: 2100000, guid: 42997a46d4ce7ac48a673a5ae3d8ae68, type: 2}
+      objectReference: {fileID: 2100000, guid: 807df0a3bd5fb484687907be1b8246c0, type: 2}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
