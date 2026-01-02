@@ -1,8 +1,9 @@
 using Unity.FPS.Game;
 using Unity.FPS.Hex;
 using UnityEngine;
+using Unity.FPS.Gameplay;
 
-namespace Unity.FPS.Gameplay
+namespace Unity.FPS.Hex
 {
     public class HexPickup : Pickup
     {
