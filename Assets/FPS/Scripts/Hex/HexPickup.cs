@@ -1,12 +1,13 @@
 using Unity.FPS.Game;
+using Unity.FPS.Hex;
 using UnityEngine;
 
 namespace Unity.FPS.Gameplay
 {
     public class HexPickup : Pickup
     {
-        [Header("Event Panel Settings")]
-        public GameObject eventPanel;
+        [Header("Hex Panel Settings")]
+        public GameObject hexPanelObject;
 
         private bool hasTriggered = false;
         
@@ -19,23 +20,21 @@ namespace Unity.FPS.Gameplay
             {
                 hasTriggered = true; 
 
-                if (eventPanel != null)
+                if (hexPanelObject != null)
                 {
-                    // 显示事件面板
-                    eventPanel.SetActive(true); 
-                    
-                    // 暂停游戏
-                    Time.timeScale = 0; 
-                    
-                    // 获取 EventManager 组件
-                    EventManager eventManager = eventPanel.GetComponent<EventManager>();
-                    if (eventManager != null)
+                    // 获取 HexPanel 组件
+                    HexPanel hexPanel = hexPanelObject.GetComponent<HexPanel>();
+                    if (hexPanel != null)
                     {
-                        // 将当前触发物传递给EventManager
-                        eventManager.SetTriggerObject(gameObject);
+                        // 显示海克斯面板（会自动暂停游戏并随机选择3个效果）
+                        hexPanel.ShowPanel();
+                        
+                        Debug.Log("海克斯面板已显示，游戏已暂停！");
                     }
-                    
-                    Debug.Log("事件面板已显示，游戏已暂停！");
+                    else
+                    {
+                        Debug.LogWarning("未找到HexPanel组件！");
+                    }
                     
                     // Play pickup feedback and destroy the object
                     PlayPickupFeedback();
@@ -43,7 +42,7 @@ namespace Unity.FPS.Gameplay
                 }
                 else
                 {
-                    // If no event panel is assigned, use default pickup behavior
+                    // If no hex panel is assigned, use default pickup behavior
                     base.OnPicked(pickingPlayer);
                     Destroy(gameObject);
                 }
@@ -58,11 +57,12 @@ namespace Unity.FPS.Gameplay
         // Override OnPicked to prevent double processing
         protected override void OnPicked(PlayerCharacterController player)
         {
-            // Only process if eventPanel is null, otherwise handled in OnTriggerEnter
-            if (eventPanel == null && !hasTriggered)
+            // Only process if hexPanelObject is null, otherwise handled in OnTriggerEnter
+            if (hexPanelObject == null && !hasTriggered)
             {
                 base.OnPicked(player);
             }
         }
     }
 }
+

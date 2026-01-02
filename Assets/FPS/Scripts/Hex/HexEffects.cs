@@ -3,24 +3,69 @@ using System.Collections.Generic;
 using UnityEngine;
 using Unity.FPS.Game;
 using Unity.FPS.Gameplay;
+using System;
 
 namespace Unity.FPS.Hex
 {
+    // 海克斯数据类型
+    [System.Serializable]
+    public class HexData
+    {
+        public string hexName;           // 海克斯名称
+        public string hexDescription;    // 海克斯描述
+        public Action hexEffect;         // 海克斯效果函数
+
+        public HexData(string name, string description, Action effect)
+        {
+            hexName = name;
+            hexDescription = description;
+            hexEffect = effect;
+        }
+    }
+
     public class HexEffects : MonoBehaviour
     {
+        // 所有可用的海克斯效果列表
+        public List<HexData> allHexEffects = new List<HexData>();
 
-        // 海克斯列表大全：
-        // 1.基础效果，最大生命值加10
-        // 2.基础效果，攻击力+5
-        // 3.基础效果，移动速度+10%
-        // 4.心之钢——每击杀一个敌人，最大生命值+3
-        // 5.迅捷步伐——击杀一个敌人后，移动速度+30%，持续1秒
-        // 6.豌豆射手：有15%的概率同时发射3颗子弹(直线)。
-        // 7.生命源泉：每隔5秒，回复1点最大生命值。
-        
-        //未实现：
-        // 8.过热引擎：连续攻击4次后，下一次子弹变（红色），攻击的伤害变为200%。
-        // 9.多重射击：有15%的概率同时发射3颗子弹(散射)。
+        void Awake()
+        {
+            // 初始化海克斯效果列表
+            InitializeHexEffects();
+        }
+
+        // 初始化所有海克斯效果
+        void InitializeHexEffects()
+        {
+            allHexEffects.Clear();
+
+            allHexEffects.Add(new HexData("生命强化", "最大生命值 +10", OnHealthUp));
+            allHexEffects.Add(new HexData("攻击强化", "攻击力 +5", OnAttackUp));
+            allHexEffects.Add(new HexData("速度强化", "移动速度 +10%", OnSpeedUp));
+            allHexEffects.Add(new HexData("心之钢", "每击杀一个敌人，最大生命值 +3", OnHeartOfSteel));
+            allHexEffects.Add(new HexData("迅捷步伐", "击杀敌人后，移动速度 +30%，持续1秒", OnSwiftFootwork));
+            allHexEffects.Add(new HexData("豌豆射手", "有15%的概率同时发射3颗子弹", OnMultiShot));
+            allHexEffects.Add(new HexData("生命源泉", "每隔5秒，回复1点生命值", OnLifeSource));
+        }
+
+        // 获取随机的N个海克斯效果（不重复）
+        public List<HexData> GetRandomHexEffects(int count)
+        {
+            List<HexData> randomEffects = new List<HexData>();
+            List<HexData> tempList = new List<HexData>(allHexEffects);
+
+            // 确保不超过可用效果数量
+            count = Mathf.Min(count, tempList.Count);
+
+            for (int i = 0; i < count; i++)
+            {
+                int randomIndex = UnityEngine.Random.Range(0, tempList.Count);
+                randomEffects.Add(tempList[randomIndex]);
+                tempList.RemoveAt(randomIndex); // 移除已选择的，避免重复
+            }
+
+            return randomEffects;
+        }
 
         // 基础效果，攻击力+5
         public void OnAttackUp()

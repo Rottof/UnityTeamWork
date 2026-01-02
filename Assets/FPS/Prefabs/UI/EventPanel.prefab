@@ -100,7 +100,7 @@ MonoBehaviour:
   m_fontSizeMin: 18
   m_fontSizeMax: 72
   m_fontStyle: 0
-  m_HorizontalAlignment: 8
+  m_HorizontalAlignment: 2
   m_VerticalAlignment: 256
   m_textAlignment: 65535
   m_characterSpacing: 0
@@ -576,7 +576,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "123\u6D77\u514B\u65AF"
+  m_text: 123
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 35efbca0af5ee2f48a1e65d5d5c78578, type: 2}
   m_sharedMaterial: {fileID: -5578647612644146540, guid: 35efbca0af5ee2f48a1e65d5d5c78578,
@@ -1210,7 +1210,7 @@ MonoBehaviour:
   m_fontSizeMin: 18
   m_fontSizeMax: 72
   m_fontStyle: 0
-  m_HorizontalAlignment: 1
+  m_HorizontalAlignment: 2
   m_VerticalAlignment: 256
   m_textAlignment: 65535
   m_characterSpacing: 0
@@ -1408,10 +1408,10 @@ RectTransform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 6591333080025464358}
   - {fileID: 6496412797020182706}
   - {fileID: 5056372832232845598}
   - {fileID: 2834750919876055963}
+  - {fileID: 6591333080025464358}
   m_Father: {fileID: 8642756372455631777}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
@@ -1449,9 +1449,9 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 2934074283968143855}
-  - {fileID: 5627579788124650239}
   - {fileID: 2423481032726051736}
   - {fileID: 3468649925785480865}
+  - {fileID: 5627579788124650239}
   m_Father: {fileID: 8642756372455631777}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &5361332017005867193
@@ -1519,7 +1519,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: 
+  m_text: "\u6D77\u514B\u65AF\u6548\u679C"
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 35efbca0af5ee2f48a1e65d5d5c78578, type: 2}
   m_sharedMaterial: {fileID: -5578647612644146540, guid: 35efbca0af5ee2f48a1e65d5d5c78578,
@@ -1554,7 +1554,7 @@ MonoBehaviour:
   m_fontSizeMin: 18
   m_fontSizeMax: 72
   m_fontStyle: 0
-  m_HorizontalAlignment: 1
+  m_HorizontalAlignment: 2
   m_VerticalAlignment: 256
   m_textAlignment: 65535
   m_characterSpacing: 0
@@ -1600,7 +1600,7 @@ GameObject:
   - component: {fileID: 8642756372455631777}
   - component: {fileID: 152871803214508186}
   - component: {fileID: 2891336619940252368}
-  - component: {fileID: 5159769095574295598}
+  - component: {fileID: 4887389557707085923}
   m_Layer: 5
   m_Name: EventPanel
   m_TagString: Untagged
@@ -1670,7 +1670,7 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
---- !u!114 &5159769095574295598
+--- !u!114 &4887389557707085923
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -1682,11 +1682,19 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9e5b54ad568d5034b8e048080d45e17d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  eventPanel: {fileID: 5723270607635128672}
-  Button1: {fileID: 7655025993844206410}
-  Button2: {fileID: 7389622988529145664}
-  Button3: {fileID: 5655327405886911601}
-  countdownText: {fileID: 0}
+  hex1: {fileID: 2804816112820650205}
+  hex2: {fileID: 3957491768813258821}
+  hex3: {fileID: 7645795714093469726}
+  hex1Text1: {fileID: 789343146988321641}
+  hex1Text2: {fileID: 8589582193530336840}
+  hex2Text1: {fileID: 1238140462905306934}
+  hex2Text2: {fileID: 6920722053214336844}
+  hex3Text1: {fileID: 205473031306040181}
+  hex3Text2: {fileID: 2593740081499641454}
+  hex1Button: {fileID: 7655025993844206410}
+  hex2Button: {fileID: 7389622988529145664}
+  hex3Button: {fileID: 5655327405886911601}
+  hexPanel: {fileID: 5723270607635128672}
 --- !u!1 &5778081944197930924
 GameObject:
   m_ObjectHideFlags: 0
@@ -2136,9 +2144,9 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 1864255888275384378}
-  - {fileID: 7012113218114116014}
   - {fileID: 2624691945802313266}
   - {fileID: 6196299507983329421}
+  - {fileID: 7012113218114116014}
   m_Father: {fileID: 8642756372455631777}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &8805347629338556111
