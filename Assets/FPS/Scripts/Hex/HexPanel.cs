@@ -118,8 +118,11 @@ namespace Unity.FPS.Hex
         {
             if (index >= 0 && index < currentHexEffects.Count)
             {
-                // 触发对应的海克斯效果
-                currentHexEffects[index].hexEffect?.Invoke();
+                // 应用海克斯效果并在UI上显示
+                if (hexEffects != null)
+                {
+                    hexEffects.ApplyHexEffect(currentHexEffects[index]);
+                }
 
                 // 关闭面板
                 ClosePanel();

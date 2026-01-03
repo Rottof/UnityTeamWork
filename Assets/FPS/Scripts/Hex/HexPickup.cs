@@ -21,20 +21,26 @@ namespace Unity.FPS.Hex
             {
                 hasTriggered = true; 
 
+                Debug.Log($"[HexPickup] 玩家触发了海克斯拾取物！");
+
                 if (hexPanelObject != null)
                 {
+                    Debug.Log($"[HexPickup] hexPanelObject已设置: {hexPanelObject.name}");
+                    
                     // 获取 HexPanel 组件
                     HexPanel hexPanel = hexPanelObject.GetComponent<HexPanel>();
                     if (hexPanel != null)
                     {
+                        Debug.Log($"[HexPickup] 找到HexPanel组件，准备显示面板");
+                        
                         // 显示海克斯面板（会自动暂停游戏并随机选择3个效果）
                         hexPanel.ShowPanel();
                         
-                        Debug.Log("海克斯面板已显示，游戏已暂停！");
+                        Debug.Log("[HexPickup] 海克斯面板已显示，游戏已暂停！");
                     }
                     else
                     {
-                        Debug.LogWarning("未找到HexPanel组件！");
+                        Debug.LogError($"[HexPickup] 未找到HexPanel组件！在对象 {hexPanelObject.name} 上。请确保该对象有HexPanel组件。");
                     }
                     
                     // Play pickup feedback and destroy the object
@@ -43,6 +49,8 @@ namespace Unity.FPS.Hex
                 }
                 else
                 {
+                    Debug.LogWarning("[HexPickup] hexPanelObject未设置！请在Inspector中设置HexPanel对象。");
+                    
                     // If no hex panel is assigned, use default pickup behavior
                     base.OnPicked(pickingPlayer);
                     Destroy(gameObject);
