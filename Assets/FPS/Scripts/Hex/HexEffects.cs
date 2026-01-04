@@ -100,7 +100,7 @@ namespace Unity.FPS.Hex
             allHexEffects.Add(new HexData("狂战士", "生命值低于30%时，伤害 +50%", OnBerserker));
             allHexEffects.Add(new HexData("坚韧不拔", "受到伤害降低10%", OnDamageReduction));
             allHexEffects.Add(new HexData("弹药充裕", "最大弹药量 +50%", OnAmmoBoost));
-            allHexEffects.Add(new HexData("幸运之子", "增加击杀敌人掉落战利品的概率", OnVampirism));
+            allHexEffects.Add(new HexData("弹力强化", "Jump Height +20%", OnJumpHeightUp));
 
             Debug.Log("海克斯效果列表初始化完成");
         }
@@ -410,11 +410,20 @@ namespace Unity.FPS.Hex
             }
         }
 
-        // 吸血鬼：造成伤害时回复伤害值的10%生命值
-        public void OnVampirism()
+        // 弹力强化：jump Height +20%
+        public void OnJumpHeightUp()
         {
-            // 这个效果需要在造成伤害时触发，通常在武器击中敌人时调用
-            print("吸血鬼激活：造成伤害时回复伤害值的10%生命值！");
+            PlayerCharacterController player = FindObjectOfType<PlayerCharacterController>();
+            if (player != null)
+            {
+                float oldJumpForce = player.JumpForce;
+                player.JumpForce *= 1.2f; // 增加20%
+                print($"🚀 弹力强化激活：跳跃高度 +20%！（{oldJumpForce:F2} -> {player.JumpForce:F2}）");
+            }
+            else
+            {
+                Debug.LogWarning("弹力强化：未找到玩家对象！");
+            }
         }
 
         // 弹药充裕：最大弹药量+50%
