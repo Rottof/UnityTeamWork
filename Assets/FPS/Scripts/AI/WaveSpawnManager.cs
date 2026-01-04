@@ -202,6 +202,7 @@ namespace Unity.FPS.AI
                     if (selectedPrefab != null)
                     {
                         GameObject enemy = Instantiate(selectedPrefab, spawnPosition, Quaternion.identity);
+                        EnemyManager.Instance.RegisterEnemy(enemy.GetComponent<EnemyController>());
                         ApplyWaveBuffs(enemy, healthMultiplier, damageMultiplier, false);
                         spawnedSmallEnemies.Add(enemy);
                     }

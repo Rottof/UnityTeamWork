@@ -50,7 +50,7 @@ namespace Unity.FPS.Hex
 
         // 狂战士配置
         private const float BERSERKER_HEALTH_THRESHOLD = 0.3f; // 30%生命值阈值
-        private const float BERSERKER_DAMAGE_MULTIPLIER = 1.5f; // 伤害增加50%（即1.5倍）
+        private const float BERSERKER_DAMAGE_MULTIPLIER = 0.5f; // 伤害增加50%（即1.5倍）
 
         // 保存武器和对应的射击回调，用于清理
         private Dictionary<WeaponController, System.Action> multiShotCallbacks = new Dictionary<WeaponController, System.Action>();
@@ -72,7 +72,8 @@ namespace Unity.FPS.Hex
 
             // 执行海克斯效果
             hexData.hexEffect?.Invoke();
-
+            
+            HexBag.AddHex(hexData.hexName);
             // 在UI上显示
             if (HexEffectDisplayManager.Instance != null)
             {
@@ -201,17 +202,25 @@ namespace Unity.FPS.Hex
         // 心之钢效果的回调函数
         void OnEnemyKilledForHeartOfSteel(EnemyKillEvent evt)
         {
+            int num = HexBag.GetHexCount("心之钢");
+            
+            // 先找到玩家，只找一次
             PlayerCharacterController player = FindObjectOfType<PlayerCharacterController>();
-            if (player != null)
-            {
-                Health playerHealth = player.GetComponent<Health>();
-                if (playerHealth != null)
-                {
-                    float oldMaxHealth = playerHealth.MaxHealth;
-                    playerHealth.IncreaseMaxHealth(3f);
-                    print($"心之钢触发：最大生命值 +3！（{oldMaxHealth} -> {playerHealth.MaxHealth}）");
-                }
-            }
+            if (player == null)
+                return;
+    
+            Health playerHealth = player.GetComponent<Health>();
+            if (playerHealth == null)
+                return;
+    
+            // 计算总增加量
+            int totalIncrease = num * 3;
+            float oldMaxHealth = playerHealth.MaxHealth;
+            
+            // 或者如果IncreaseMaxHealth支持参数，可以直接：
+            playerHealth.IncreaseMaxHealth(totalIncrease);
+    
+            print($"心之钢触发：层数{num}，最大生命值 +{totalIncrease}！（{oldMaxHealth} -> {playerHealth.MaxHealth}）");
         }
         
         // 迅捷步伐——击杀一个敌人后，移动速度+30%，持续1秒
@@ -332,17 +341,18 @@ namespace Unity.FPS.Hex
         
         IEnumerator ApplySpeedBoostForSwiftFootwork(PlayerCharacterController player)
         {
+            int num = HexBag.GetHexCount("迅捷步伐");
             // 保存原始速度
             float originalSpeed = player.MaxSpeedOnGround;
             // 临时提升30%移动速度
-            player.MaxSpeedOnGround *= 1.3f;
+            player.MaxSpeedOnGround *= (1f + 0.3f* num);
             
             // 广播速度提升事件（激活）
             SpeedBoostEvent speedBoostEvent = Events.SpeedBoostEvent;
             speedBoostEvent.IsActive = true;
             EventManager.Broadcast(speedBoostEvent);
             
-            print($"迅捷步伐触发：移动速度 +30%！（{originalSpeed:F2} -> {player.MaxSpeedOnGround:F2}）");
+            print($"迅捷步伐触发：移动速度 +{30*num}%！（{originalSpeed:F2} -> {player.MaxSpeedOnGround:F2}）");
             
             // 等待1秒
             yield return new WaitForSeconds(1.0f);
@@ -377,13 +387,13 @@ namespace Unity.FPS.Hex
             while (true)
             {
                 yield return new WaitForSeconds(5.0f); // 等待5秒
-                
+                int num = HexBag.GetHexCount("生命源泉");
                 // 检查玩家对象是否还存在
                 if (player != null && playerHealth != null)
                 {
                     // 回复10点生命值
-                    playerHealth.Heal(10f);
-                    print($"生命源泉：回复了10点生命值！（当前: {playerHealth.CurrentHealth}/{playerHealth.MaxHealth}）");
+                    playerHealth.Heal(10f * num);
+                    print($"生命源泉：回复了{10f*num}点生命值！（当前: {playerHealth.CurrentHealth}/{playerHealth.MaxHealth}）");
                 }
                 else
                 {
@@ -680,7 +690,7 @@ namespace Unity.FPS.Hex
         {
             isBerserkerEffectActive = true;
             int weaponCount = 0;
-
+            int num = HexBag.GetHexCount("狂战士");
             for (int i = 0; i < 9; i++)
             {
                 WeaponController weapon = weaponsManager.GetWeaponAtSlotIndex(i);
@@ -696,7 +706,7 @@ namespace Unity.FPS.Hex
                         }
 
                         float oldDamage = projectile.Damage;
-                        projectile.Damage *= BERSERKER_DAMAGE_MULTIPLIER;
+                        projectile.Damage *= (1+BERSERKER_DAMAGE_MULTIPLIER*num);
                         weaponCount++;
                         Debug.Log($"狂战士效果触发！武器 {weapon.WeaponName} 伤害增加50%（{oldDamage} -> {projectile.Damage}）");
                     }
