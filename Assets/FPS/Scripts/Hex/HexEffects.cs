@@ -32,6 +32,9 @@ namespace Unity.FPS.Hex
         private bool isHeartOfSteelActive = false;
         private bool isSwiftFootworkActive = false;
 
+        // 记录武器原始伤害值，用于恢复
+        private Dictionary<ProjectileStandard, float> originalDamageValues = new Dictionary<ProjectileStandard, float>();
+
         /// <summary>
         /// 应用海克斯效果并在UI上显示
         /// </summary>
@@ -115,29 +118,21 @@ namespace Unity.FPS.Hex
                         if (weapon != null && weapon.ProjectilePrefab != null)
                         {
                             // 检查投射物是否是 ProjectileStandard 类型
-                            ProjectileStandard originalProjectile = weapon.ProjectilePrefab.GetComponent<ProjectileStandard>();
-                            if (originalProjectile != null)
+                            ProjectileStandard projectile = weapon.ProjectilePrefab.GetComponent<ProjectileStandard>();
+                            if (projectile != null)
                             {
-                                // 创建投射物预制体的运行时副本，避免修改原始资源
-                                // 这样重新开始游戏时，武器会使用原始预制体，伤害会恢复正常
-                                ProjectileBase runtimeProjectilePrefab = Instantiate(weapon.ProjectilePrefab);
-                                runtimeProjectilePrefab.gameObject.SetActive(false);
-                                
-                                // 防止副本在场景切换时被销毁
-                                DontDestroyOnLoad(runtimeProjectilePrefab.gameObject);
-                                
-                                // 修改副本的伤害值
-                                ProjectileStandard runtimeProjectile = runtimeProjectilePrefab.GetComponent<ProjectileStandard>();
-                                if (runtimeProjectile != null)
+                                // 如果还没记录原始伤害，先记录
+                                if (!originalDamageValues.ContainsKey(projectile))
                                 {
-                                    runtimeProjectile.Damage = originalProjectile.Damage + 5f;
-                                    
-                                    // 替换武器的投射物预制体引用为运行时副本
-                                    weapon.ProjectilePrefab = runtimeProjectilePrefab;
-                                    
-                                    weaponCount++;
-                                    Debug.Log($"武器 {weapon.WeaponName} 的伤害增加了5点（基础伤害 {originalProjectile.Damage} -> 增强后 {runtimeProjectile.Damage}）");
+                                    originalDamageValues[projectile] = projectile.Damage;
                                 }
+                                
+                                // 直接增加伤害值
+                                float oldDamage = projectile.Damage;
+                                projectile.Damage += 5f;
+                                
+                                weaponCount++;
+                                Debug.Log($"武器 {weapon.WeaponName} 的伤害增加了5点（{oldDamage} -> {projectile.Damage}）");
                             }
                         }
                     }
@@ -408,6 +403,17 @@ namespace Unity.FPS.Hex
             {
                 EventManager.RemoveListener<EnemyKillEvent>(OnEnemyKilledForSwiftFootwork);
             }
+
+            // 恢复武器原始伤害值
+            foreach (var kvp in originalDamageValues)
+            {
+                if (kvp.Key != null)
+                {
+                    kvp.Key.Damage = kvp.Value;
+                    Debug.Log($"恢复投射物伤害：{kvp.Key.gameObject.name} = {kvp.Value}");
+                }
+            }
+            originalDamageValues.Clear();
         }
 
     }
