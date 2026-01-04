@@ -18,6 +18,7 @@ namespace Unity.FPS.Game
         public static DisplayMessageEvent DisplayMessageEvent = new DisplayMessageEvent();
         public static SpeedBoostEvent SpeedBoostEvent = new SpeedBoostEvent();
         public static AmmoUIScaleEvent AmmoUIScaleEvent = new AmmoUIScaleEvent();
+        public static ScoreChangedEvent ScoreChangedEvent = new ScoreChangedEvent();
     }
 
     public class ObjectiveUpdateEvent : GameEvent
@@ -74,5 +75,11 @@ namespace Unity.FPS.Game
     public class AmmoUIScaleEvent : GameEvent
     {
         public float ScaleMultiplier;
+    }
+
+    public class ScoreChangedEvent : GameEvent
+    {
+        public int TotalScore;
+        public int ScoreAdded;
     }
 }
