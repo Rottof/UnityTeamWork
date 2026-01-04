@@ -47,10 +47,23 @@ namespace Unity.FPS.UI
 
         PlayerWeaponsManager m_PlayerWeaponsManager;
         WeaponController m_Weapon;
+        Vector2 m_OriginalBackgroundSize;
+        Vector2 m_OriginalFillSize;
 
         void Awake()
         {
             EventManager.AddListener<AmmoPickupEvent>(OnAmmoPickup);
+            EventManager.AddListener<AmmoUIScaleEvent>(OnAmmoUIScaleEvent);
+            
+            // 保存原始尺寸
+            if (AmmoBackgroundImage != null)
+            {
+                m_OriginalBackgroundSize = AmmoBackgroundImage.rectTransform.sizeDelta;
+            }
+            if (AmmoFillImage != null)
+            {
+                m_OriginalFillSize = AmmoFillImage.rectTransform.sizeDelta;
+            }
         }
 
         void OnAmmoPickup(AmmoPickupEvent evt)
@@ -59,6 +72,11 @@ namespace Unity.FPS.UI
             {
                 BulletCounter.text = m_Weapon.GetCarriedPhysicalBullets().ToString();
             }
+        }
+
+        void OnAmmoUIScaleEvent(AmmoUIScaleEvent evt)
+        {
+            ScaleAmmoBar(evt.ScaleMultiplier);
         }
 
         public void Initialize(WeaponController weapon, int weaponIndex)
@@ -104,6 +122,32 @@ namespace Unity.FPS.UI
         void Destroy()
         {
             EventManager.RemoveListener<AmmoPickupEvent>(OnAmmoPickup);
+            EventManager.RemoveListener<AmmoUIScaleEvent>(OnAmmoUIScaleEvent);
+        }
+
+        /// <summary>
+        /// 调整弹药条的UI尺寸（用于弹药充裕效果）
+        /// </summary>
+        /// <param name="scaleMultiplier">尺寸倍数（例如1.5表示增加50%）</param>
+        public void ScaleAmmoBar(float scaleMultiplier)
+        {
+            if (AmmoBackgroundImage != null)
+            {
+                // 基于当前尺寸进行缩放，支持叠加效果
+                Vector2 currentSize = AmmoBackgroundImage.rectTransform.sizeDelta;
+                Vector2 newSize = new Vector2(currentSize.x * scaleMultiplier, currentSize.y);
+                AmmoBackgroundImage.rectTransform.sizeDelta = newSize;
+                Debug.Log($"弹药UI调整：{m_Weapon.WeaponName} 背景尺寸 {currentSize.x:F1} -> {newSize.x:F1}");
+            }
+            
+            if (AmmoFillImage != null)
+            {
+                // 基于当前尺寸进行缩放，支持叠加效果
+                Vector2 currentSize = AmmoFillImage.rectTransform.sizeDelta;
+                Vector2 newSize = new Vector2(currentSize.x * scaleMultiplier, currentSize.y);
+                AmmoFillImage.rectTransform.sizeDelta = newSize;
+                Debug.Log($"弹药UI调整：{m_Weapon.WeaponName} 填充尺寸 {currentSize.x:F1} -> {newSize.x:F1}");
+            }
         }
     }
 }

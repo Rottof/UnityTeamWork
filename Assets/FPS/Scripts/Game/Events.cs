@@ -17,6 +17,7 @@ namespace Unity.FPS.Game
         public static DamageEvent DamageEvent = new DamageEvent();
         public static DisplayMessageEvent DisplayMessageEvent = new DisplayMessageEvent();
         public static SpeedBoostEvent SpeedBoostEvent = new SpeedBoostEvent();
+        public static AmmoUIScaleEvent AmmoUIScaleEvent = new AmmoUIScaleEvent();
     }
 
     public class ObjectiveUpdateEvent : GameEvent
@@ -68,5 +69,10 @@ namespace Unity.FPS.Game
     public class SpeedBoostEvent : GameEvent
     {
         public bool IsActive;
+    }
+
+    public class AmmoUIScaleEvent : GameEvent
+    {
+        public float ScaleMultiplier;
     }
 }

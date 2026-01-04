@@ -98,7 +98,6 @@ namespace Unity.FPS.Hex
             allHexEffects.Add(new HexData("生命源泉", "每隔5秒，回复10点生命值", OnLifeSource));
             allHexEffects.Add(new HexData("致命打击", "有20%的概率造成双倍伤害", OnCriticalStrike));
             allHexEffects.Add(new HexData("狂战士", "生命值低于30%时，伤害 +50%", OnBerserker));
-
             allHexEffects.Add(new HexData("坚韧不拔", "受到伤害降低10%", OnDamageReduction));
             allHexEffects.Add(new HexData("弹药充裕", "最大弹药量 +50%", OnAmmoBoost));
             allHexEffects.Add(new HexData("幸运之子", "增加击杀敌人掉落战利品的概率", OnVampirism));
@@ -427,20 +426,56 @@ namespace Unity.FPS.Hex
                 PlayerWeaponsManager weaponsManager = player.GetComponent<PlayerWeaponsManager>();
                 if (weaponsManager != null)
                 {
+                    int weaponCount = 0;
+                    const float AMMO_BOOST_MULTIPLIER = 1.5f; // 增加50%
+                    
                     // 增加所有武器的最大弹药量
-                    WeaponController[] weapons = weaponsManager.GetComponentsInChildren<WeaponController>();
-                    foreach (WeaponController weapon in weapons)
+                    for (int i = 0; i < 9; i++)
                     {
+                        WeaponController weapon = weaponsManager.GetWeaponAtSlotIndex(i);
                         if (weapon != null)
                         {
-                            // 这里需要访问武器的弹药系统来增加最大弹药
-                            // 具体实现取决于武器系统的结构
-                            print($"武器 {weapon.WeaponName} 的弹药量增加！");
+                            // 保存旧的最大弹药量
+                            int oldMaxAmmo = weapon.MaxAmmo;
+                            
+                            // 增加50%的最大弹药量
+                            weapon.MaxAmmo = Mathf.RoundToInt(weapon.MaxAmmo * AMMO_BOOST_MULTIPLIER);
+                            
+                            // 同时也增加当前弹药量（如果不这样做，玩家需要等待reload）
+                            float currentAmmoRatio = weapon.CurrentAmmoRatio;
+                            // 使用反射或者直接设置来增加当前弹药
+                            // 由于m_CurrentAmmo是私有的，我们通过UseAmmo的负数来增加弹药
+                            int ammoToAdd = weapon.MaxAmmo - oldMaxAmmo;
+                            // 这里我们通过增加MaxAmmo后，让玩家立即获得额外的弹药
+                            weapon.UseAmmo(-ammoToAdd); // 使用负数来"增加"弹药
+                            
+                            weaponCount++;
+                            Debug.Log($"弹药充裕：武器 {weapon.WeaponName} 最大弹药量增加 50%（{oldMaxAmmo} -> {weapon.MaxAmmo}）");
                         }
                     }
-                    print("弹药充裕激活：最大弹药量 +50%！");
+                    
+                    // 调整UI尺寸
+                    AdjustAmmoUIScale(AMMO_BOOST_MULTIPLIER);
+                    
+                    if (weaponCount > 0)
+                    {
+                        print($"📦 弹药充裕激活：最大弹药量 +50%！（{weaponCount} 件武器）");
+                    }
+                    else
+                    {
+                        print("📦 弹药充裕激活：最大弹药量 +50%！但当前没有武器");
+                    }
                 }
             }
+        }
+
+        void AdjustAmmoUIScale(float scaleMultiplier)
+        {
+            // 通过事件系统通知UI调整尺寸，避免直接引用UI程序集
+            AmmoUIScaleEvent ammoUIScaleEvent = Events.AmmoUIScaleEvent;
+            ammoUIScaleEvent.ScaleMultiplier = scaleMultiplier;
+            EventManager.Broadcast(ammoUIScaleEvent);
+            Debug.Log($"已广播弹药UI缩放事件：缩放倍数 = {scaleMultiplier}");
         }
 
         // 致命打击：有20%的概率造成双倍伤害
