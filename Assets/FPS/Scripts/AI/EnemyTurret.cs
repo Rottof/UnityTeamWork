@@ -26,6 +26,14 @@ namespace Unity.FPS.AI
         public ParticleSystem[] OnDetectVfx;
         public AudioClip OnDetectSfx;
 
+        [Header("Hex Pickup Drop")]
+        [Tooltip("Hex pickup prefab to drop on death")]
+        public GameObject HexPickupPrefab;
+        
+        [Tooltip("Chance to drop Hex pickup (0.5 = 50%)")]
+        [Range(0f, 1f)]
+        public float HexDropRate = 0.5f;
+
         public AIState AiState { get; private set; }
 
         EnemyController m_EnemyController;
@@ -44,6 +52,7 @@ namespace Unity.FPS.AI
             m_Health = GetComponent<Health>();
             DebugUtility.HandleErrorIfNullGetComponent<Health, EnemyTurret>(m_Health, this, gameObject);
             m_Health.OnDamaged += OnDamaged;
+            m_Health.OnDie += OnDie;
 
             m_EnemyController = GetComponent<EnemyController>();
             DebugUtility.HandleErrorIfNullGetComponent<EnemyController, EnemyTurret>(m_EnemyController, this,
@@ -165,6 +174,16 @@ namespace Unity.FPS.AI
 
             Animator.SetBool(k_AnimIsActiveParameter, false);
             m_TimeLostDetection = Time.time;
+        }
+
+        void OnDie()
+        {
+            // Check if should drop Hex pickup
+            if (HexPickupPrefab != null && Random.value <= HexDropRate)
+            {
+                // Spawn Hex pickup at turret position
+                Instantiate(HexPickupPrefab, transform.position, Quaternion.identity);
+            }
         }
     }
 }
