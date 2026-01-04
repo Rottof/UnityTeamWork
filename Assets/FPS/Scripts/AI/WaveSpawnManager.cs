@@ -346,6 +346,17 @@ namespace Unity.FPS.AI
                 }
             }
 
+            // 特殊处理：自爆怪的延迟递减
+            var bombEnemy = enemy.GetComponent<BombEnemyController>();
+            if (bombEnemy != null)
+            {
+                float originalDelay = bombEnemy.ArmDelay;
+                // 每波减少0.3秒，直到为0
+                float delayReduction = (currentWave - 1) * 0.3f;
+                bombEnemy.ArmDelay = Mathf.Max(0f, 3f - delayReduction);
+                Debug.Log($"自爆怪延迟: {originalDelay:F2}s -> {bombEnemy.ArmDelay:F2}s (波次 {currentWave})");
+            }
+
             // 标记怪物类型（可选，用于后续识别）
             var enemyType = enemy.AddComponent<EnemyWaveData>();
             enemyType.waveNumber = currentWave;
