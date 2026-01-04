@@ -30,6 +30,7 @@ namespace Unity.FPS.Hex
 
         // 海克斯效果激活状态标志
         private bool isHeartOfSteelActive = false;
+        private bool isSwiftFootworkActive = false;
 
         /// <summary>
         /// 应用海克斯效果并在UI上显示
@@ -197,16 +198,27 @@ namespace Unity.FPS.Hex
         // 迅捷步伐——击杀一个敌人后，移动速度+30%，持续1秒
         public void OnSwiftFootwork()
         {
-            // 这个效果需要在击杀敌人后激活，这里实现加速逻辑
+            if (!isSwiftFootworkActive)
+            {
+                isSwiftFootworkActive = true;
+                // 注册敌人击杀事件监听器
+                EventManager.AddListener<EnemyKillEvent>(OnEnemyKilledForSwiftFootwork);
+                print("迅捷步伐激活：击杀敌人后，移动速度 +30%，持续1秒！");
+            }
+        }
+
+        // 迅捷步伐效果的回调函数
+        void OnEnemyKilledForSwiftFootwork(EnemyKillEvent evt)
+        {
             PlayerCharacterController player = FindObjectOfType<PlayerCharacterController>();
             if (player != null)
             {
-                StartCoroutine(ApplySpeedBoost(player, 0.3f, 1.0f));
-                print("迅捷步伐触发：移动速度 +30%，持续1秒！");
+                // 在玩家对象上启动协程，避免在非激活的对象上启动
+                player.StartCoroutine(ApplySpeedBoostForSwiftFootwork(player));
             }
         }
         
-        // 多重射击：有15%的概率同时发射3颗子弹
+        // 豌豆射手：有15%的概率同时发射3颗子弹
         public void OnMultiShot()
         {
             // 这个效果需要修改武器的射击逻辑，这里只是记录
@@ -221,18 +233,33 @@ namespace Unity.FPS.Hex
             print("生命源泉激活：每隔5秒，回复1点生命值！");
         }
         
-        IEnumerator ApplySpeedBoost(PlayerCharacterController player, float boostAmount, float duration)
+        IEnumerator ApplySpeedBoostForSwiftFootwork(PlayerCharacterController player)
         {
-            float originalSpeed = player.SprintSpeedModifier;
-            player.SprintSpeedModifier += boostAmount;
+            // 保存原始速度
+            float originalSpeed = player.MaxSpeedOnGround;
+            // 临时提升30%移动速度
+            player.MaxSpeedOnGround *= 1.3f;
             
-            yield return new WaitForSeconds(duration);
+            // 广播速度提升事件（激活）
+            SpeedBoostEvent speedBoostEvent = Events.SpeedBoostEvent;
+            speedBoostEvent.IsActive = true;
+            EventManager.Broadcast(speedBoostEvent);
             
-            // 确保玩家对象仍然存在
+            print($"迅捷步伐触发：移动速度 +30%！（{originalSpeed:F2} -> {player.MaxSpeedOnGround:F2}）");
+            
+            // 等待1秒
+            yield return new WaitForSeconds(1.0f);
+            
+            // 恢复原始速度
             if (player != null)
             {
-                player.SprintSpeedModifier = originalSpeed;
+                player.MaxSpeedOnGround = originalSpeed;
+                print($"迅捷步伐效果结束，速度恢复至 {originalSpeed:F2}");
             }
+            
+            // 广播速度提升事件（结束）
+            speedBoostEvent.IsActive = false;
+            EventManager.Broadcast(speedBoostEvent);
         }
         
         IEnumerator HealOverTime()
@@ -376,6 +403,10 @@ namespace Unity.FPS.Hex
             if (isHeartOfSteelActive)
             {
                 EventManager.RemoveListener<EnemyKillEvent>(OnEnemyKilledForHeartOfSteel);
+            }
+            if (isSwiftFootworkActive)
+            {
+                EventManager.RemoveListener<EnemyKillEvent>(OnEnemyKilledForSwiftFootwork);
             }
         }
 
