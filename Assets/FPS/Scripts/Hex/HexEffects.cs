@@ -80,7 +80,7 @@ namespace Unity.FPS.Hex
             allHexEffects.Add(new HexData("心之钢", "每击杀一个敌人，最大生命值 +3", OnHeartOfSteel));
             allHexEffects.Add(new HexData("迅捷步伐", "击杀敌人后，移动速度 +30%，持续1秒", OnSwiftFootwork));
             allHexEffects.Add(new HexData("强力攻击", "攻击时同时发射3颗子弹", OnMultiShot));
-            allHexEffects.Add(new HexData("生命源泉", "每隔5秒，回复1点生命值", OnLifeSource));
+            allHexEffects.Add(new HexData("生命源泉", "每隔5秒，回复10点生命值", OnLifeSource));
             allHexEffects.Add(new HexData("吸血鬼", "造成伤害时回复伤害值的10%生命值", OnVampirism));
             allHexEffects.Add(new HexData("弹药充裕", "最大弹药量 +50%", OnAmmoBoost));
             allHexEffects.Add(new HexData("致命打击", "有20%的概率造成双倍伤害", OnCriticalStrike));
@@ -299,12 +299,20 @@ namespace Unity.FPS.Hex
             }
         }
         
-        // 生命源泉：每隔5秒，回复1点最大生命值
+        // 生命源泉：每隔5秒，回复10点生命值
         public void OnLifeSource()
         {
-            // 这个效果需要持续运行，这里启动一个协程
-            StartCoroutine(HealOverTime());
-            print("生命源泉激活：每隔5秒，回复1点生命值！");
+            // 在玩家对象上启动协程，避免在非激活对象上启动
+            PlayerCharacterController player = FindObjectOfType<PlayerCharacterController>();
+            if (player != null)
+            {
+                player.StartCoroutine(HealOverTime(player));
+                print("生命源泉激活：每隔5秒，回复10点生命值！");
+            }
+            else
+            {
+                Debug.LogWarning("生命源泉：未找到玩家对象！");
+            }
         }
         
         IEnumerator ApplySpeedBoostForSwiftFootwork(PlayerCharacterController player)
@@ -336,22 +344,36 @@ namespace Unity.FPS.Hex
             EventManager.Broadcast(speedBoostEvent);
         }
         
-        IEnumerator HealOverTime()
+        IEnumerator HealOverTime(PlayerCharacterController player)
         {
+            if (player == null)
+            {
+                Debug.LogError("生命源泉：玩家对象为空，无法启动协程！");
+                yield break;
+            }
+
+            Health playerHealth = player.GetComponent<Health>();
+            if (playerHealth == null)
+            {
+                Debug.LogError("生命源泉：玩家没有 Health 组件！");
+                yield break;
+            }
+
             while (true)
             {
                 yield return new WaitForSeconds(5.0f); // 等待5秒
                 
-                PlayerCharacterController player = FindObjectOfType<PlayerCharacterController>();
-                if (player != null)
+                // 检查玩家对象是否还存在
+                if (player != null && playerHealth != null)
                 {
-                    Health playerHealth = player.GetComponent<Health>();
-                    if (playerHealth != null)
-                    {
-                        // 回复1点生命值
-                        playerHealth.Heal(1f);
-                        print("生命源泉：回复了1点生命值！");
-                    }
+                    // 回复10点生命值
+                    playerHealth.Heal(10f);
+                    print($"生命源泉：回复了10点生命值！（当前: {playerHealth.CurrentHealth}/{playerHealth.MaxHealth}）");
+                }
+                else
+                {
+                    Debug.LogWarning("生命源泉：玩家对象已销毁，停止回复。");
+                    yield break;
                 }
             }
         }
