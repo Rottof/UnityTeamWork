@@ -9,12 +9,29 @@ namespace Unity.FPS.AI
         public List<EnemyController> Enemies { get; private set; }
         public int NumberOfEnemiesTotal { get; private set; }
         public int NumberOfEnemiesRemaining => Enemies.Count;
-
+        
+        public static EnemyManager Instance;
+        
+        private SpawnPoint[] spawnPoints;
+        
+        public Transform player;
+        
         void Awake()
         {
+            Instance = this;
             Enemies = new List<EnemyController>();
         }
 
+        private void Start()
+        {
+            spawnPoints = FindObjectsOfType<SpawnPoint>();
+
+            foreach (var sp in spawnPoints)
+            {
+                sp.Init(player);
+            }
+        }
+        
         public void RegisterEnemy(EnemyController enemy)
         {
             Enemies.Add(enemy);

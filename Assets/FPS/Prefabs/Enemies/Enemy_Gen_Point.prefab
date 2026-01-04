@@ -9,6 +9,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 3527753205785121997}
+  - component: {fileID: -925670412383975140}
   m_Layer: 0
   m_Name: Enemy_Gen_Point
   m_TagString: Untagged
@@ -31,3 +32,24 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &-925670412383975140
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5948424882133927432}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 44b225e897364158a1f5a9bf8d967391, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  spawnConfigs:
+  - monsterId: 1
+    spawnInterval: 1
+    timer: 0
+  - monsterId: 2
+    spawnInterval: 2
+    timer: 0
+  maxMonsterCount: 5
+  activeDistance: 20

@@ -252,7 +252,6 @@ namespace Unity.FPS.AI
         {
             Gizmos.color = Color.red;
             Gizmos.DrawWireSphere(transform.position, ExplosionRadius);
-
             Gizmos.color = Color.yellow;
             Gizmos.DrawWireSphere(transform.position, ExplosionTriggerDistance);
         }
