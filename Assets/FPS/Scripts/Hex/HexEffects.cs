@@ -31,9 +31,18 @@ namespace Unity.FPS.Hex
         // 海克斯效果激活状态标志
         private bool isHeartOfSteelActive = false;
         private bool isSwiftFootworkActive = false;
+        private bool isMultiShotActive = false;
 
         // 记录武器原始伤害值，用于恢复
         private Dictionary<ProjectileStandard, float> originalDamageValues = new Dictionary<ProjectileStandard, float>();
+
+        // 多重打击配置
+        private const float MULTI_SHOT_CHANCE = 1.0f; // 100%触发概率
+        private const int MULTI_SHOT_EXTRA_BULLETS = 2; // 额外发射2颗子弹
+        private const float MULTI_SHOT_SPREAD_ANGLE = 45f; // 扇形总角度45度（3颗子弹，每颗间隔15度）
+
+        // 保存武器和对应的射击回调，用于清理
+        private Dictionary<WeaponController, System.Action> multiShotCallbacks = new Dictionary<WeaponController, System.Action>();
 
         /// <summary>
         /// 应用海克斯效果并在UI上显示
@@ -70,7 +79,7 @@ namespace Unity.FPS.Hex
             allHexEffects.Add(new HexData("速度强化", "移动速度 +10%", OnSpeedUp));
             allHexEffects.Add(new HexData("心之钢", "每击杀一个敌人，最大生命值 +3", OnHeartOfSteel));
             allHexEffects.Add(new HexData("迅捷步伐", "击杀敌人后，移动速度 +30%，持续1秒", OnSwiftFootwork));
-            allHexEffects.Add(new HexData("豌豆射手", "有15%的概率同时发射3颗子弹", OnMultiShot));
+            allHexEffects.Add(new HexData("强力攻击", "攻击时同时发射3颗子弹", OnMultiShot));
             allHexEffects.Add(new HexData("生命源泉", "每隔5秒，回复1点生命值", OnLifeSource));
             allHexEffects.Add(new HexData("吸血鬼", "造成伤害时回复伤害值的10%生命值", OnVampirism));
             allHexEffects.Add(new HexData("弹药充裕", "最大弹药量 +50%", OnAmmoBoost));
@@ -213,11 +222,81 @@ namespace Unity.FPS.Hex
             }
         }
         
-        // 豌豆射手：有15%的概率同时发射3颗子弹
+        // 多重射击：每次射击都会同时发射3颗子弹
         public void OnMultiShot()
         {
-            // 这个效果需要修改武器的射击逻辑，这里只是记录
-            print("多重射击激活：有15%的概率同时发射3颗子弹！");
+            if (!isMultiShotActive)
+            {
+                isMultiShotActive = true;
+                // 为所有武器注册多重射击监听器
+                RegisterMultiShotForAllWeapons();
+                print("多重射击激活：每次射击都会同时发射3颗子弹！");
+            }
+        }
+
+        // 为所有武器注册多重射击事件
+        void RegisterMultiShotForAllWeapons()
+        {
+            PlayerCharacterController player = FindObjectOfType<PlayerCharacterController>();
+            if (player != null)
+            {
+                PlayerWeaponsManager weaponsManager = player.GetComponent<PlayerWeaponsManager>();
+                if (weaponsManager != null)
+                {
+                    // 为现有武器注册
+                    for (int i = 0; i < 9; i++)
+                    {
+                        WeaponController weapon = weaponsManager.GetWeaponAtSlotIndex(i);
+                        if (weapon != null)
+                        {
+                            RegisterMultiShotForWeapon(weapon);
+                        }
+                    }
+
+                    // 监听新武器添加事件
+                    weaponsManager.OnAddedWeapon += (weapon, index) => RegisterMultiShotForWeapon(weapon);
+                }
+            }
+        }
+
+        // 为单个武器注册多重射击回调
+        void RegisterMultiShotForWeapon(WeaponController weapon)
+        {
+            if (weapon != null && !multiShotCallbacks.ContainsKey(weapon))
+            {
+                // 创建回调并保存引用
+                System.Action callback = () => OnWeaponShootForMultiShot(weapon);
+                multiShotCallbacks[weapon] = callback;
+                weapon.OnShootProcessed += callback;
+                Debug.Log($"已为武器 {weapon.WeaponName} 注册多重射击效果");
+            }
+        }
+
+        // 武器射击时的多重射击回调
+        void OnWeaponShootForMultiShot(WeaponController weapon)
+        {
+            // 100%触发（如需概率可修改 MULTI_SHOT_CHANCE）
+            if (UnityEngine.Random.value <= MULTI_SHOT_CHANCE)
+            {
+                // 发射额外的子弹，成扇形分布
+                float angleStep = MULTI_SHOT_SPREAD_ANGLE / (MULTI_SHOT_EXTRA_BULLETS + 1);
+                float startAngle = -MULTI_SHOT_SPREAD_ANGLE / 2f;
+
+                for (int i = 0; i < MULTI_SHOT_EXTRA_BULLETS; i++)
+                {
+                    // 计算扇形中每颗子弹的角度
+                    float angle = startAngle + angleStep * (i + 1);
+                    Vector3 direction = Quaternion.Euler(0, angle, 0) * weapon.WeaponMuzzle.forward;
+
+                    // 实例化投射物
+                    ProjectileBase newProjectile = Instantiate(weapon.ProjectilePrefab,
+                        weapon.WeaponMuzzle.position,
+                        Quaternion.LookRotation(direction));
+                    newProjectile.Shoot(weapon);
+                }
+
+                Debug.Log($"多重射击触发！额外发射了 {MULTI_SHOT_EXTRA_BULLETS} 颗子弹（总共3颗，扇形角度45度）");
+            }
         }
         
         // 生命源泉：每隔5秒，回复1点最大生命值
@@ -402,6 +481,19 @@ namespace Unity.FPS.Hex
             if (isSwiftFootworkActive)
             {
                 EventManager.RemoveListener<EnemyKillEvent>(OnEnemyKilledForSwiftFootwork);
+            }
+
+            // 清理多重打击回调
+            if (isMultiShotActive)
+            {
+                foreach (var kvp in multiShotCallbacks)
+                {
+                    if (kvp.Key != null)
+                    {
+                        kvp.Key.OnShootProcessed -= kvp.Value;
+                    }
+                }
+                multiShotCallbacks.Clear();
             }
 
             // 恢复武器原始伤害值
