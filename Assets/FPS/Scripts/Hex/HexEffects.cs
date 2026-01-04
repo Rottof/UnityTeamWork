@@ -94,7 +94,7 @@ namespace Unity.FPS.Hex
             return randomEffects;
         }
 
-        // 基础效果，攻击力+5
+        // 基础效果，攻击力+5 （所有武器的伤害增加5点）
         public void OnAttackUp()
         {
             // 由于没有直接的攻击力属性，我们通过获取玩家的武器来增加伤害
@@ -104,9 +104,33 @@ namespace Unity.FPS.Hex
                 PlayerWeaponsManager weaponsManager = player.GetComponent<PlayerWeaponsManager>();
                 if (weaponsManager != null)
                 {
-                    // 这里可以实现攻击力增加的逻辑
-                    // 例如，可以修改武器伤害或通过其他方式实现
-                    print("攻击力 +5！");
+                    // 遍历所有武器槽位，增加武器伤害
+                    int weaponCount = 0;
+                    for (int i = 0; i < 9; i++) // PlayerWeaponsManager 有9个武器槽位
+                    {
+                        WeaponController weapon = weaponsManager.GetWeaponAtSlotIndex(i);
+                        if (weapon != null && weapon.ProjectilePrefab != null)
+                        {
+                            // 检查投射物是否是 ProjectileStandard 类型
+                            ProjectileStandard projectile = weapon.ProjectilePrefab.GetComponent<ProjectileStandard>();
+                            if (projectile != null)
+                            {
+                                // 增加伤害值
+                                projectile.Damage += 5f;
+                                weaponCount++;
+                                Debug.Log($"武器 {weapon.WeaponName} 的伤害增加了5点，当前伤害: {projectile.Damage}");
+                            }
+                        }
+                    }
+                    
+                    if (weaponCount > 0)
+                    {
+                        print($"攻击力 +5！已增强 {weaponCount} 件武器的伤害");
+                    }
+                    else
+                    {
+                        print("攻击力 +5！但当前没有可增强的武器");
+                    }
                 }
             }
         }
