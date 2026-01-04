@@ -18,6 +18,16 @@ namespace Unity.FPS.Game
         public bool Invincible { get; set; }
         public bool CanPickup() => CurrentHealth < MaxHealth;
 
+        // 伤害减免系数（0-0.9，表示减免0%-90%伤害）
+        private float m_DamageReduction = 0f;
+        private const float MAX_DAMAGE_REDUCTION = 0.9f; // 最大90%减免
+
+        public float DamageReduction
+        {
+            get => m_DamageReduction;
+            set => m_DamageReduction = Mathf.Clamp(value, 0f, MAX_DAMAGE_REDUCTION);
+        }
+
         public float GetRatio() => CurrentHealth / MaxHealth;
         public bool IsCritical() => GetRatio() <= CriticalHealthRatio;
 
@@ -55,8 +65,11 @@ namespace Unity.FPS.Game
             if (Invincible)
                 return;
 
+            // 应用伤害减免
+            float reducedDamage = damage * (1f - m_DamageReduction);
+
             float healthBefore = CurrentHealth;
-            CurrentHealth -= damage;
+            CurrentHealth -= reducedDamage;
             CurrentHealth = Mathf.Clamp(CurrentHealth, 0f, MaxHealth);
 
             // call OnDamage action

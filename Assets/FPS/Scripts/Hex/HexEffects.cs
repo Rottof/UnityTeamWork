@@ -539,10 +539,28 @@ namespace Unity.FPS.Hex
                 Health playerHealth = player.GetComponent<Health>();
                 if (playerHealth != null)
                 {
-                    // 这里需要修改Health组件来支持伤害减免
-                    // 可以通过添加一个伤害减免系数来实现
-                    print("坚韧不拔激活：受到伤害降低10%！");
+                    // 增加10%伤害减免，上限为90%
+                    float oldReduction = playerHealth.DamageReduction;
+                    playerHealth.DamageReduction += 0.1f; // 增加10%减免
+                    float newReduction = playerHealth.DamageReduction;
+                    
+                    if (newReduction >= 0.9f)
+                    {
+                        print($"🛡️ 坚韧不拔激活：伤害减免 +10%！当前减免：{newReduction * 100:F0}%（已达上限）");
+                    }
+                    else
+                    {
+                        print($"🛡️ 坚韧不拔激活：伤害减免 +10%！（{oldReduction * 100:F0}% -> {newReduction * 100:F0}%）");
+                    }
                 }
+                else
+                {
+                    Debug.LogWarning("坚韧不拔：未找到玩家 Health 组件！");
+                }
+            }
+            else
+            {
+                Debug.LogWarning("坚韧不拔：未找到玩家对象！");
             }
         }
 
