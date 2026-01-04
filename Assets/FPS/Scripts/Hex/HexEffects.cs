@@ -32,6 +32,7 @@ namespace Unity.FPS.Hex
         private bool isHeartOfSteelActive = false;
         private bool isSwiftFootworkActive = false;
         private bool isMultiShotActive = false;
+        private bool isCriticalStrikeActive = false;
 
         // 记录武器原始伤害值，用于恢复
         private Dictionary<ProjectileStandard, float> originalDamageValues = new Dictionary<ProjectileStandard, float>();
@@ -41,8 +42,13 @@ namespace Unity.FPS.Hex
         private const int MULTI_SHOT_EXTRA_BULLETS = 2; // 额外发射2颗子弹
         private const float MULTI_SHOT_SPREAD_ANGLE = 45f; // 扇形总角度45度（3颗子弹，每颗间隔15度）
 
+        // 致命打击配置
+        private const float CRITICAL_STRIKE_CHANCE = 0.2f; // 20%暴击概率
+        private const float CRITICAL_STRIKE_MULTIPLIER = 2.0f; // 双倍伤害
+
         // 保存武器和对应的射击回调，用于清理
         private Dictionary<WeaponController, System.Action> multiShotCallbacks = new Dictionary<WeaponController, System.Action>();
+        private Dictionary<WeaponController, System.Action> criticalStrikeCallbacks = new Dictionary<WeaponController, System.Action>();
 
         /// <summary>
         /// 应用海克斯效果并在UI上显示
@@ -81,11 +87,13 @@ namespace Unity.FPS.Hex
             allHexEffects.Add(new HexData("迅捷步伐", "击杀敌人后，移动速度 +30%，持续1秒", OnSwiftFootwork));
             allHexEffects.Add(new HexData("强力攻击", "攻击时同时发射3颗子弹", OnMultiShot));
             allHexEffects.Add(new HexData("生命源泉", "每隔5秒，回复10点生命值", OnLifeSource));
-            allHexEffects.Add(new HexData("吸血鬼", "造成伤害时回复伤害值的10%生命值", OnVampirism));
-            allHexEffects.Add(new HexData("弹药充裕", "最大弹药量 +50%", OnAmmoBoost));
+
             allHexEffects.Add(new HexData("致命打击", "有20%的概率造成双倍伤害", OnCriticalStrike));
+            allHexEffects.Add(new HexData("狂战士", "生命值低于30%时，伤害 +50%", OnBerserker));
+
             allHexEffects.Add(new HexData("坚韧不拔", "受到伤害降低10%", OnDamageReduction));
-            allHexEffects.Add(new HexData("狂战士", "生命值低于30%时，攻击速度 +50%", OnBerserker));
+            allHexEffects.Add(new HexData("弹药充裕", "最大弹药量 +50%", OnAmmoBoost));
+            allHexEffects.Add(new HexData("幸运之子", "增加击杀敌人掉落战利品的概率", OnVampirism));
 
             Debug.Log("海克斯效果列表初始化完成");
         }
@@ -430,8 +438,88 @@ namespace Unity.FPS.Hex
         // 致命打击：有20%的概率造成双倍伤害
         public void OnCriticalStrike()
         {
-            // 这个效果需要在造成伤害时判断触发，通常在武器系统中实现
-            print("致命打击激活：有20%的概率造成双倍伤害！");
+            if (!isCriticalStrikeActive)
+            {
+                isCriticalStrikeActive = true;
+                RegisterCriticalStrikeForAllWeapons();
+                print("致命打击激活：有20%的概率造成双倍伤害！");
+            }
+        }
+
+        void RegisterCriticalStrikeForAllWeapons()
+        {
+            PlayerCharacterController player = FindObjectOfType<PlayerCharacterController>();
+            if (player != null)
+            {
+                PlayerWeaponsManager weaponsManager = player.GetComponent<PlayerWeaponsManager>();
+                if (weaponsManager != null)
+                {
+                    // 为所有现有武器注册暴击效果
+                    for (int i = 0; i < 9; i++)
+                    {
+                        WeaponController weapon = weaponsManager.GetWeaponAtSlotIndex(i);
+                        if (weapon != null)
+                        {
+                            RegisterCriticalStrikeForWeapon(weapon);
+                        }
+                    }
+
+                    // 为将来添加的武器注册暴击效果
+                    weaponsManager.OnAddedWeapon += (weapon, index) => RegisterCriticalStrikeForWeapon(weapon);
+                }
+            }
+        }
+
+        void RegisterCriticalStrikeForWeapon(WeaponController weapon)
+        {
+            if (weapon != null && !criticalStrikeCallbacks.ContainsKey(weapon))
+            {
+                System.Action callback = () => OnWeaponShootForCriticalStrike(weapon);
+                criticalStrikeCallbacks[weapon] = callback;
+                weapon.OnShootProcessed += callback;
+                Debug.Log($"已为武器 {weapon.WeaponName} 注册致命打击效果");
+            }
+        }
+
+        void OnWeaponShootForCriticalStrike(WeaponController weapon)
+        {
+            // 20%概率触发暴击
+            if (UnityEngine.Random.value <= CRITICAL_STRIKE_CHANCE)
+            {
+                if (weapon.ProjectilePrefab != null)
+                {
+                    ProjectileStandard projectile = weapon.ProjectilePrefab.GetComponent<ProjectileStandard>();
+                    if (projectile != null)
+                    {
+                        // 保存原始伤害
+                        float originalDamage = projectile.Damage;
+                        
+                        // 临时增加伤害为双倍
+                        projectile.Damage *= CRITICAL_STRIKE_MULTIPLIER;
+                        
+                        Debug.Log($"💥 致命打击触发！武器 {weapon.WeaponName} 造成暴击伤害！（{originalDamage} -> {projectile.Damage}）");
+                        
+                        // 在下一帧恢复原始伤害
+                        PlayerCharacterController player = FindObjectOfType<PlayerCharacterController>();
+                        if (player != null)
+                        {
+                            player.StartCoroutine(RestoreDamageAfterShoot(projectile, originalDamage));
+                        }
+                    }
+                }
+            }
+        }
+
+        IEnumerator RestoreDamageAfterShoot(ProjectileStandard projectile, float originalDamage)
+        {
+            // 等待一帧，让投射物实例化完成
+            yield return null;
+            
+            // 恢复原始伤害
+            if (projectile != null)
+            {
+                projectile.Damage = originalDamage;
+            }
         }
 
         // 坚韧不拔：受到伤害降低10%
@@ -516,6 +604,19 @@ namespace Unity.FPS.Hex
                     }
                 }
                 multiShotCallbacks.Clear();
+            }
+
+            // 清理致命打击回调
+            if (isCriticalStrikeActive)
+            {
+                foreach (var kvp in criticalStrikeCallbacks)
+                {
+                    if (kvp.Key != null)
+                    {
+                        kvp.Key.OnShootProcessed -= kvp.Value;
+                    }
+                }
+                criticalStrikeCallbacks.Clear();
             }
 
             // 恢复武器原始伤害值
