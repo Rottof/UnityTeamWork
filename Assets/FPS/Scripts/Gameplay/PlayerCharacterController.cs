@@ -1,4 +1,5 @@
-﻿using System.Xml.Linq;
+﻿using System.Collections;
+using System.Xml.Linq;
 using Unity.FPS.Game;
 using UnityEngine;
 using UnityEngine.Events;
@@ -170,6 +171,83 @@ namespace Unity.FPS.Gameplay
             // force the crouch state to false when starting
             SetCrouchingState(false, true);
             UpdateCharacterHeight(true);
+
+            // 延迟输出玩家初始状态信息
+            StartCoroutine(LogPlayerStatusAfterDelay());
+        }
+
+        IEnumerator LogPlayerStatusAfterDelay()
+        {
+            // 等待0.5秒，确保所有组件（特别是武器）都已完全初始化
+            yield return new WaitForSeconds(0.5f);
+            LogPlayerStatus();
+        }
+
+        /// <summary>
+        /// 输出玩家的当前状态信息（血量、移动速度、武器伤害）
+        /// </summary>
+        public void LogPlayerStatus()
+        {
+            System.Text.StringBuilder statusLog = new System.Text.StringBuilder();
+            statusLog.AppendLine("========== 玩家初始状态 ==========");
+
+            // 获取玩家血量信息
+            if (m_Health != null)
+            {
+                statusLog.AppendLine($"【生命值】当前: {m_Health.CurrentHealth} / 最大: {m_Health.MaxHealth}");
+            }
+            else
+            {
+                statusLog.AppendLine("【生命值】未找到 Health 组件");
+            }
+
+            // 获取玩家移动速度信息
+            statusLog.AppendLine($"【移动速度】地面最大速度: {MaxSpeedOnGround}");
+            statusLog.AppendLine($"【移动速度】冲刺速度倍数: {SprintSpeedModifier}");
+            statusLog.AppendLine($"【移动速度】实际冲刺速度: {MaxSpeedOnGround * SprintSpeedModifier}");
+
+            // 获取玩家武器信息
+            if (m_WeaponsManager != null)
+            {
+                statusLog.AppendLine("【武器信息】");
+                bool hasWeapon = false;
+                
+                for (int i = 0; i < 9; i++)
+                {
+                    WeaponController weapon = m_WeaponsManager.GetWeaponAtSlotIndex(i);
+                    if (weapon != null)
+                    {
+                        hasWeapon = true;
+                        string weaponInfo = $"  槽位 {i}: {weapon.WeaponName}";
+                        
+                        // 获取武器伤害
+                        if (weapon.ProjectilePrefab != null)
+                        {
+                            ProjectileStandard projectile = weapon.ProjectilePrefab.GetComponent<ProjectileStandard>();
+                            if (projectile != null)
+                            {
+                                weaponInfo += $" | 伤害: {projectile.Damage}";
+                                weaponInfo += $" | 射速: {1f / weapon.DelayBetweenShots:F2} 发/秒";
+                                weaponInfo += $" | 弹药: {weapon.CurrentAmmoRatio * 100:F0}%";
+                            }
+                        }
+                        
+                        statusLog.AppendLine(weaponInfo);
+                    }
+                }
+                
+                if (!hasWeapon)
+                {
+                    statusLog.AppendLine("  当前没有装备任何武器");
+                }
+            }
+            else
+            {
+                statusLog.AppendLine("【武器信息】未找到 PlayerWeaponsManager 组件");
+            }
+
+            statusLog.AppendLine("==================================");
+            Debug.Log(statusLog.ToString());
         }
 
         void Update()

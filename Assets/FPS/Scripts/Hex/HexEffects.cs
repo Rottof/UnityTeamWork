@@ -74,7 +74,6 @@ namespace Unity.FPS.Hex
             Debug.Log("海克斯效果列表初始化完成");
         }
 
-
         // 获取随机的N个海克斯效果（不重复）
         public List<HexData> GetRandomHexEffects(int count)
         {
@@ -112,13 +111,29 @@ namespace Unity.FPS.Hex
                         if (weapon != null && weapon.ProjectilePrefab != null)
                         {
                             // 检查投射物是否是 ProjectileStandard 类型
-                            ProjectileStandard projectile = weapon.ProjectilePrefab.GetComponent<ProjectileStandard>();
-                            if (projectile != null)
+                            ProjectileStandard originalProjectile = weapon.ProjectilePrefab.GetComponent<ProjectileStandard>();
+                            if (originalProjectile != null)
                             {
-                                // 增加伤害值
-                                projectile.Damage += 5f;
-                                weaponCount++;
-                                Debug.Log($"武器 {weapon.WeaponName} 的伤害增加了5点，当前伤害: {projectile.Damage}");
+                                // 创建投射物预制体的运行时副本，避免修改原始资源
+                                // 这样重新开始游戏时，武器会使用原始预制体，伤害会恢复正常
+                                ProjectileBase runtimeProjectilePrefab = Instantiate(weapon.ProjectilePrefab);
+                                runtimeProjectilePrefab.gameObject.SetActive(false);
+                                
+                                // 防止副本在场景切换时被销毁
+                                DontDestroyOnLoad(runtimeProjectilePrefab.gameObject);
+                                
+                                // 修改副本的伤害值
+                                ProjectileStandard runtimeProjectile = runtimeProjectilePrefab.GetComponent<ProjectileStandard>();
+                                if (runtimeProjectile != null)
+                                {
+                                    runtimeProjectile.Damage = originalProjectile.Damage + 5f;
+                                    
+                                    // 替换武器的投射物预制体引用为运行时副本
+                                    weapon.ProjectilePrefab = runtimeProjectilePrefab;
+                                    
+                                    weaponCount++;
+                                    Debug.Log($"武器 {weapon.WeaponName} 的伤害增加了5点（基础伤害 {originalProjectile.Damage} -> 增强后 {runtimeProjectile.Damage}）");
+                                }
                             }
                         }
                     }
