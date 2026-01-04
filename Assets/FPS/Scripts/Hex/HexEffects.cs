@@ -150,16 +150,16 @@ namespace Unity.FPS.Hex
             }
         }
         
-        // 基础效果，移动速度+10%
+        // 基础效果，移动速度+10%（提升正常行走速度）
         public void OnSpeedUp()
         {
             PlayerCharacterController player = FindObjectOfType<PlayerCharacterController>();
             if (player != null)
             {
-                // 增加10%的移动速度
-                player.SprintSpeedModifier += 0.1f;
-                print("移动速度 +10%！");
-                print("当前冲刺速度倍数: " + player.SprintSpeedModifier);
+                // 增加10%的正常行走速度
+                float oldSpeed = player.MaxSpeedOnGround;
+                player.MaxSpeedOnGround *= 1.1f;
+                print($"移动速度 +10%！（{oldSpeed:F2} -> {player.MaxSpeedOnGround:F2}）");
             }
         }
         
