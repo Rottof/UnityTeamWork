@@ -15901,6 +15901,14 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   player: {fileID: 2729281214152228933}
   waveInterval: 30
+  smallEnemyTypes:
+  - prefab: {fileID: 2015434656898269652, guid: 25a1b0efadb966e44889fce712c8ff8d,
+      type: 3}
+    spawnWeight: 70
+    typeName: 
+  - prefab: {fileID: 936085787405495482, guid: 62ca4e407fb1e244f8cca94979037573, type: 3}
+    spawnWeight: 30
+    typeName: 
   smallEnemyPrefab: {fileID: 2015434656898269652, guid: 25a1b0efadb966e44889fce712c8ff8d,
     type: 3}
   initialSmallEnemyLimit: 5
