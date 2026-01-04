@@ -33,6 +33,8 @@ namespace Unity.FPS.Hex
         private bool isSwiftFootworkActive = false;
         private bool isMultiShotActive = false;
         private bool isCriticalStrikeActive = false;
+        private bool isBerserkerActive = false;
+        private bool isBerserkerEffectActive = false; // 狂战士效果是否正在生效
 
         // 记录武器原始伤害值，用于恢复
         private Dictionary<ProjectileStandard, float> originalDamageValues = new Dictionary<ProjectileStandard, float>();
@@ -46,9 +48,16 @@ namespace Unity.FPS.Hex
         private const float CRITICAL_STRIKE_CHANCE = 0.2f; // 20%暴击概率
         private const float CRITICAL_STRIKE_MULTIPLIER = 2.0f; // 双倍伤害
 
+        // 狂战士配置
+        private const float BERSERKER_HEALTH_THRESHOLD = 0.3f; // 30%生命值阈值
+        private const float BERSERKER_DAMAGE_MULTIPLIER = 1.5f; // 伤害增加50%（即1.5倍）
+
         // 保存武器和对应的射击回调，用于清理
         private Dictionary<WeaponController, System.Action> multiShotCallbacks = new Dictionary<WeaponController, System.Action>();
         private Dictionary<WeaponController, System.Action> criticalStrikeCallbacks = new Dictionary<WeaponController, System.Action>();
+        
+        // 保存狂战士效果激活前的原始伤害
+        private Dictionary<ProjectileStandard, float> berserkerOriginalDamages = new Dictionary<ProjectileStandard, float>();
 
         /// <summary>
         /// 应用海克斯效果并在UI上显示
@@ -87,7 +96,6 @@ namespace Unity.FPS.Hex
             allHexEffects.Add(new HexData("迅捷步伐", "击杀敌人后，移动速度 +30%，持续1秒", OnSwiftFootwork));
             allHexEffects.Add(new HexData("强力攻击", "攻击时同时发射3颗子弹", OnMultiShot));
             allHexEffects.Add(new HexData("生命源泉", "每隔5秒，回复10点生命值", OnLifeSource));
-
             allHexEffects.Add(new HexData("致命打击", "有20%的概率造成双倍伤害", OnCriticalStrike));
             allHexEffects.Add(new HexData("狂战士", "生命值低于30%时，伤害 +50%", OnBerserker));
 
@@ -538,46 +546,127 @@ namespace Unity.FPS.Hex
             }
         }
 
-        // 狂战士：生命值低于30%时，攻击速度+50%
+        // 狂战士：生命值低于30%时，伤害+50%
         public void OnBerserker()
         {
-            // 这个效果需要持续检测玩家生命值，并在生命值低于30%时激活
-            StartCoroutine(BerserkerEffect());
-            print("狂战士激活：生命值低于30%时，攻击速度 +50%！");
-        }
-
-        IEnumerator BerserkerEffect()
-        {
-            bool isBerserkerActive = false;
-            
-            while (true)
+            if (!isBerserkerActive)
             {
-                yield return new WaitForSeconds(0.5f); // 每0.5秒检测一次
-                
+                isBerserkerActive = true;
+                // 在玩家对象上启动协程，避免在非激活对象上启动
                 PlayerCharacterController player = FindObjectOfType<PlayerCharacterController>();
                 if (player != null)
                 {
-                    Health playerHealth = player.GetComponent<Health>();
-                    if (playerHealth != null)
+                    player.StartCoroutine(BerserkerEffect(player));
+                    print("狂战士激活：生命值低于30%时，伤害 +50%！");
+                }
+                else
+                {
+                    Debug.LogWarning("狂战士：未找到玩家对象！");
+                }
+            }
+        }
+
+        IEnumerator BerserkerEffect(PlayerCharacterController player)
+        {
+            if (player == null)
+            {
+                Debug.LogError("狂战士：玩家对象为空，无法启动协程！");
+                yield break;
+            }
+
+            Health playerHealth = player.GetComponent<Health>();
+            if (playerHealth == null)
+            {
+                Debug.LogError("狂战士：玩家没有 Health 组件！");
+                yield break;
+            }
+
+            PlayerWeaponsManager weaponsManager = player.GetComponent<PlayerWeaponsManager>();
+            if (weaponsManager == null)
+            {
+                Debug.LogError("狂战士：玩家没有 PlayerWeaponsManager 组件！");
+                yield break;
+            }
+
+            while (true)
+            {
+                yield return new WaitForSeconds(0.1f); // 每0.1秒检测一次，更快响应
+                
+                // 检查玩家对象是否还存在
+                if (player == null || playerHealth == null)
+                {
+                    Debug.LogWarning("狂战士：玩家对象已销毁，停止检测。");
+                    yield break;
+                }
+
+                float healthPercentage = playerHealth.CurrentHealth / playerHealth.MaxHealth;
+                
+                // 如果生命值低于30%且效果未激活
+                if (healthPercentage < BERSERKER_HEALTH_THRESHOLD && !isBerserkerEffectActive)
+                {
+                    ActivateBerserkerDamageBoost(weaponsManager);
+                }
+                // 如果生命值恢复到30%以上且效果已激活
+                else if (healthPercentage >= BERSERKER_HEALTH_THRESHOLD && isBerserkerEffectActive)
+                {
+                    DeactivateBerserkerDamageBoost();
+                }
+            }
+        }
+
+        void ActivateBerserkerDamageBoost(PlayerWeaponsManager weaponsManager)
+        {
+            isBerserkerEffectActive = true;
+            int weaponCount = 0;
+
+            for (int i = 0; i < 9; i++)
+            {
+                WeaponController weapon = weaponsManager.GetWeaponAtSlotIndex(i);
+                if (weapon != null && weapon.ProjectilePrefab != null)
+                {
+                    ProjectileStandard projectile = weapon.ProjectilePrefab.GetComponent<ProjectileStandard>();
+                    if (projectile != null)
                     {
-                        float healthPercentage = playerHealth.CurrentHealth / playerHealth.MaxHealth;
-                        
-                        // 如果生命值低于30%且狂战士未激活
-                        if (healthPercentage < 0.3f && !isBerserkerActive)
+                        // 保存原始伤害（如果还没保存过）
+                        if (!berserkerOriginalDamages.ContainsKey(projectile))
                         {
-                            isBerserkerActive = true;
-                            print("狂战士效果触发！攻击速度大幅提升！");
-                            // 这里可以修改武器的射速或其他攻击相关属性
+                            berserkerOriginalDamages[projectile] = projectile.Damage;
                         }
-                        // 如果生命值恢复到30%以上且狂战士已激活
-                        else if (healthPercentage >= 0.3f && isBerserkerActive)
-                        {
-                            isBerserkerActive = false;
-                            print("狂战士效果结束。");
-                            // 恢复正常的攻击速度
-                        }
+
+                        float oldDamage = projectile.Damage;
+                        projectile.Damage *= BERSERKER_DAMAGE_MULTIPLIER;
+                        weaponCount++;
+                        Debug.Log($"狂战士效果触发！武器 {weapon.WeaponName} 伤害增加50%（{oldDamage} -> {projectile.Damage}）");
                     }
                 }
+            }
+
+            if (weaponCount > 0)
+            {
+                print($"🔥 狂战士效果触发！所有武器伤害 +50%！（{weaponCount} 件武器）");
+            }
+        }
+
+        void DeactivateBerserkerDamageBoost()
+        {
+            isBerserkerEffectActive = false;
+            int weaponCount = 0;
+
+            foreach (var kvp in berserkerOriginalDamages)
+            {
+                if (kvp.Key != null)
+                {
+                    kvp.Key.Damage = kvp.Value;
+                    weaponCount++;
+                    Debug.Log($"狂战士效果结束，恢复武器伤害：{kvp.Key.gameObject.name} = {kvp.Value}");
+                }
+            }
+
+            berserkerOriginalDamages.Clear();
+
+            if (weaponCount > 0)
+            {
+                print($"狂战士效果结束，所有武器伤害恢复正常。（{weaponCount} 件武器）");
             }
         }
 
@@ -619,7 +708,21 @@ namespace Unity.FPS.Hex
                 criticalStrikeCallbacks.Clear();
             }
 
-            // 恢复武器原始伤害值
+            // 清理狂战士效果
+            if (isBerserkerEffectActive)
+            {
+                foreach (var kvp in berserkerOriginalDamages)
+                {
+                    if (kvp.Key != null)
+                    {
+                        kvp.Key.Damage = kvp.Value;
+                        Debug.Log($"狂战士效果清理：恢复投射物伤害 {kvp.Key.gameObject.name} = {kvp.Value}");
+                    }
+                }
+                berserkerOriginalDamages.Clear();
+            }
+
+            // 恢复武器原始伤害值（攻击强化效果）
             foreach (var kvp in originalDamageValues)
             {
                 if (kvp.Key != null)
