@@ -444,14 +444,14 @@ namespace Unity.FPS.AI
         void OnGUI()
         {
             // 显示波次信息（调试用）
-            GUILayout.BeginArea(new Rect(10, 10, 300, 150));
-            GUILayout.Box($"=== 波次刷新系统 ===\n" +
-                         $"当前波次: {currentWave}\n" +
-                         $"小型怪上限: {currentSmallEnemyLimit}\n" +
-                         $"场上小型怪: {spawnedSmallEnemies.Count}\n" +
-                         $"血量倍率: {(1f + currentWave * healthIncreasePerWave):F2}x\n" +
-                         $"伤害倍率: {(1f + currentWave * damageIncreasePerWave):F2}x");
-            GUILayout.EndArea();
+            // GUILayout.BeginArea(new Rect(10, 10, 300, 150));
+            // GUILayout.Box($"=== 波次刷新系统 ===\n" +
+            //              $"当前波次: {currentWave}\n" +
+            //              $"小型怪上限: {currentSmallEnemyLimit}\n" +
+            //              $"场上小型怪: {spawnedSmallEnemies.Count}\n" +
+            //              $"血量倍率: {(1f + currentWave * healthIncreasePerWave):F2}x\n" +
+            //              $"伤害倍率: {(1f + currentWave * damageIncreasePerWave):F2}x");
+            // GUILayout.EndArea();
         }
     }
 }
