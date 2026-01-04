@@ -7,6 +7,23 @@ using UnityEngine.AI;
 namespace Unity.FPS.AI
 {
     /// <summary>
+    /// 小型怪类型配置
+    /// </summary>
+    [System.Serializable]
+    public class SmallEnemyType
+    {
+        [Tooltip("怪物预制体")]
+        public GameObject prefab;
+        
+        [Tooltip("生成概率权重（例如：70表示70%）")]
+        [Range(0, 100)]
+        public float spawnWeight = 50f;
+        
+        [Tooltip("类型名称（用于调试）")]
+        public string typeName = "小型怪";
+    }
+
+    /// <summary>
     /// 怪物波次刷新管理器
     /// 负责管理小型怪和大型怪的定时刷新，实现难度递增机制
     /// </summary>
@@ -20,7 +37,10 @@ namespace Unity.FPS.AI
         public float waveInterval = 30f;
 
         [Header("小型怪设置")]
-        [Tooltip("小型怪预制体")]
+        [Tooltip("小型怪类型列表（支持多种类型和概率）")]
+        public List<SmallEnemyType> smallEnemyTypes = new List<SmallEnemyType>();
+        
+        [Tooltip("【已弃用】单一小型怪预制体（保留兼容性，建议使用上方列表）")]
         public GameObject smallEnemyPrefab;
 
         [Tooltip("第一波小型怪数量上限")]
@@ -146,9 +166,16 @@ namespace Unity.FPS.AI
         /// </summary>
         void SpawnSmallEnemies(float healthMultiplier, float damageMultiplier)
         {
-            if (smallEnemyPrefab == null || player == null)
+            if (player == null)
             {
-                Debug.LogWarning("小型怪预制体或玩家未设置！");
+                Debug.LogWarning("玩家未设置！");
+                return;
+            }
+
+            // 检查是否有可用的小型怪类型
+            if (!HasValidSmallEnemyTypes())
+            {
+                Debug.LogWarning("没有有效的小型怪预制体！请在 Small Enemy Types 列表中添加怪物类型。");
                 return;
             }
 
@@ -170,11 +197,90 @@ namespace Unity.FPS.AI
                 Vector3 spawnPosition = GetRandomSpawnPositionAroundPlayer();
                 if (spawnPosition != Vector3.zero)
                 {
-                    GameObject enemy = Instantiate(smallEnemyPrefab, spawnPosition, Quaternion.identity);
-                    ApplyWaveBuffs(enemy, healthMultiplier, damageMultiplier, false);
-                    spawnedSmallEnemies.Add(enemy);
+                    // 根据概率选择怪物类型
+                    GameObject selectedPrefab = SelectRandomSmallEnemyPrefab();
+                    if (selectedPrefab != null)
+                    {
+                        GameObject enemy = Instantiate(selectedPrefab, spawnPosition, Quaternion.identity);
+                        ApplyWaveBuffs(enemy, healthMultiplier, damageMultiplier, false);
+                        spawnedSmallEnemies.Add(enemy);
+                    }
                 }
             }
+        }
+
+        /// <summary>
+        /// 检查是否有有效的小型怪类型
+        /// </summary>
+        bool HasValidSmallEnemyTypes()
+        {
+            // 优先检查新的类型列表
+            if (smallEnemyTypes != null && smallEnemyTypes.Count > 0)
+            {
+                foreach (var type in smallEnemyTypes)
+                {
+                    if (type.prefab != null && type.spawnWeight > 0)
+                    {
+                        return true;
+                    }
+                }
+            }
+
+            // 兼容旧版单一预制体
+            return smallEnemyPrefab != null;
+        }
+
+        /// <summary>
+        /// 根据概率权重随机选择一个小型怪预制体
+        /// </summary>
+        GameObject SelectRandomSmallEnemyPrefab()
+        {
+            // 优先使用新的类型列表
+            if (smallEnemyTypes != null && smallEnemyTypes.Count > 0)
+            {
+                // 收集所有有效的类型
+                List<SmallEnemyType> validTypes = new List<SmallEnemyType>();
+                foreach (var type in smallEnemyTypes)
+                {
+                    if (type.prefab != null && type.spawnWeight > 0)
+                    {
+                        validTypes.Add(type);
+                    }
+                }
+
+                if (validTypes.Count == 0)
+                {
+                    // 如果列表中没有有效类型，回退到单一预制体
+                    return smallEnemyPrefab;
+                }
+
+                // 计算总权重
+                float totalWeight = 0f;
+                foreach (var type in validTypes)
+                {
+                    totalWeight += type.spawnWeight;
+                }
+
+                // 随机选择
+                float randomValue = Random.Range(0f, totalWeight);
+                float cumulativeWeight = 0f;
+
+                foreach (var type in validTypes)
+                {
+                    cumulativeWeight += type.spawnWeight;
+                    if (randomValue <= cumulativeWeight)
+                    {
+                        Debug.Log($"[波次 {currentWave}] 选择怪物类型: {type.typeName} (权重: {type.spawnWeight}/{totalWeight})");
+                        return type.prefab;
+                    }
+                }
+
+                // 如果出错，返回第一个有效类型
+                return validTypes[0].prefab;
+            }
+
+            // 兼容旧版：使用单一预制体
+            return smallEnemyPrefab;
         }
 
         /// <summary>
