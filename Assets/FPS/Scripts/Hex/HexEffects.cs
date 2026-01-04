@@ -28,6 +28,9 @@ namespace Unity.FPS.Hex
         // 所有可用的海克斯效果列表
         public List<HexData> allHexEffects = new List<HexData>();
 
+        // 海克斯效果激活状态标志
+        private bool isHeartOfSteelActive = false;
+
         /// <summary>
         /// 应用海克斯效果并在UI上显示
         /// </summary>
@@ -166,16 +169,27 @@ namespace Unity.FPS.Hex
         // 心之钢——每击杀一个敌人，最大生命值+3
         public void OnHeartOfSteel()
         {
-            // 这个效果需要监听敌人死亡事件，通常在其他地方激活
-            // 这里只是定义效果，实际监听在其他地方
+            if (!isHeartOfSteelActive)
+            {
+                isHeartOfSteelActive = true;
+                // 注册敌人击杀事件监听器
+                EventManager.AddListener<EnemyKillEvent>(OnEnemyKilledForHeartOfSteel);
+                print("心之钢激活：每击杀一个敌人，最大生命值 +3！");
+            }
+        }
+
+        // 心之钢效果的回调函数
+        void OnEnemyKilledForHeartOfSteel(EnemyKillEvent evt)
+        {
             PlayerCharacterController player = FindObjectOfType<PlayerCharacterController>();
             if (player != null)
             {
                 Health playerHealth = player.GetComponent<Health>();
                 if (playerHealth != null)
                 {
+                    float oldMaxHealth = playerHealth.MaxHealth;
                     playerHealth.IncreaseMaxHealth(3f);
-                    print("心之钢触发：最大生命值 +3！");
+                    print($"心之钢触发：最大生命值 +3！（{oldMaxHealth} -> {playerHealth.MaxHealth}）");
                 }
             }
         }
@@ -353,6 +367,15 @@ namespace Unity.FPS.Hex
                         }
                     }
                 }
+            }
+        }
+
+        void OnDestroy()
+        {
+            // 清理事件监听器，防止内存泄漏
+            if (isHeartOfSteelActive)
+            {
+                EventManager.RemoveListener<EnemyKillEvent>(OnEnemyKilledForHeartOfSteel);
             }
         }
 
