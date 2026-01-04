@@ -71,6 +71,14 @@ namespace Unity.FPS.Game
             Cursor.lockState = CursorLockMode.None;
             Cursor.visible = true;
 
+            // 保存当前分数到PlayerPrefs，以便在结束场景中显示
+            ScoreManager scoreManager = FindObjectOfType<ScoreManager>();
+            if (scoreManager != null)
+            {
+                PlayerPrefs.SetInt("LastGameScore", scoreManager.TotalScore);
+                PlayerPrefs.Save();
+            }
+
             // Remember that we need to load the appropriate end scene after a delay
             GameIsEnding = true;
             EndGameFadeCanvasGroup.gameObject.SetActive(true);
