@@ -15614,13 +15614,13 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: 'Finish objective can add your huge score.
+  m_text: 'Finish objectives can give you huge scores.
 
 
     Try to get more scores
 
     in
-    game.'
+    this game.'
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 1f6e89fae8abfe34e91d48ec9157bae6, type: 2}
   m_sharedMaterial: {fileID: -7334511934764330045, guid: 1f6e89fae8abfe34e91d48ec9157bae6,
