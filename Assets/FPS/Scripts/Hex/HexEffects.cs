@@ -546,7 +546,8 @@ namespace Unity.FPS.Hex
         void OnWeaponShootForCriticalStrike(WeaponController weapon)
         {
             // 20%概率触发暴击
-            if (UnityEngine.Random.value <= CRITICAL_STRIKE_CHANCE)
+            int num = HexBag.GetHexCount("致命打击");
+            if (UnityEngine.Random.value <= CRITICAL_STRIKE_CHANCE * num)
             {
                 if (weapon.ProjectilePrefab != null)
                 {

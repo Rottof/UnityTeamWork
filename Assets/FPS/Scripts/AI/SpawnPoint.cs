@@ -97,7 +97,7 @@ namespace Unity.FPS.AI
                 return;
             }
 
-            Vector3 pos = transform.position + Random.insideUnitSphere * 2f;
+            Vector3 pos = transform.position + Random.insideUnitSphere * 1f;
             pos.y = transform.position.y;
 
             GameObject enemy = Instantiate(prefab, pos, Quaternion.identity);

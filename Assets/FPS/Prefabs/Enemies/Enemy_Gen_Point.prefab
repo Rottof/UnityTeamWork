@@ -46,10 +46,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   spawnConfigs:
   - monsterId: 1
-    spawnInterval: 1
+    spawnInterval: 4
     timer: 0
   - monsterId: 2
     spawnInterval: 2
     timer: 0
   maxMonsterCount: 5
   activeDistance: 20
+  cooldownTime: 10
+  resetDistance: 30
